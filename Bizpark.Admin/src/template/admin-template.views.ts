@@ -58,7 +58,8 @@ const style = `
     .fields { display: grid; gap: 8px; }
     .field { display: grid; grid-template-columns: 1fr 1fr 140px 1fr auto; gap: 8px; align-items: center; }
     .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
-    .preview-frame { border: 1px solid var(--line); border-radius: 12px; width: 100%; min-height: 440px; background: #fff; }
+    .preview-frame { border: 1px solid var(--line); border-radius: 12px; width: 100%; min-height: 440px; background: #fff; padding: 14px; overflow: auto; }
+    .preview-canvas { background: #fff; border: 1px dashed #dbe3ef; border-radius: 10px; min-height: 400px; padding: 8px; }
     @media (max-width: 960px) {
       .row, .row-2 { grid-template-columns: 1fr; }
       .field { grid-template-columns: 1fr 1fr; }
@@ -195,11 +196,15 @@ function builderScript() {
       try {
         dataObj = previewDataInput.value.trim() ? JSON.parse(previewDataInput.value) : {};
       } catch {
-        frame.srcdoc = '<div style="font-family:Arial,sans-serif;padding:24px;color:#7f1d1d">Preview data JSON is invalid.</div>';
+        frame.innerHTML = '<div style="font-family:Arial,sans-serif;padding:24px;color:#7f1d1d">Preview data JSON is invalid.</div>';
         return;
       }
       const html = applyTemplate(htmlInput.value, dataObj);
-      frame.srcdoc = html || '<div style="font-family:Arial,sans-serif;padding:24px;color:#334155">Add Base HTML Template to see preview.</div>';
+      if (!html || !html.trim()) {
+        frame.innerHTML = '<div style="font-family:Arial,sans-serif;padding:24px;color:#334155">Add Base HTML Template to see preview.</div>';
+        return;
+      }
+      frame.innerHTML = '<div class="preview-canvas">' + html + '</div>';
     }
 
     function addSection() {
@@ -447,7 +452,7 @@ export function templateFormPage(input: {
           </div>
           <div>
             <p class="muted">Live Preview</p>
-            <iframe id="livePreview" class="preview-frame"></iframe>
+            <div id="livePreview" class="preview-frame"></div>
           </div>
 
           <div class="actions">
@@ -459,4 +464,3 @@ export function templateFormPage(input: {
     `,
   );
 }
-

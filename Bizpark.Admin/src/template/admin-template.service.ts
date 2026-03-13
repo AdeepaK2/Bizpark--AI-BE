@@ -164,6 +164,45 @@ export class AdminTemplateService {
           ],
         },
       },
+      {
+        name: 'Template X',
+        description: 'Simple small landing page for quick testing.',
+        type: 'SHOWCASE',
+        baseHtmlUrl: undefined,
+        deployment: {
+          framework: 'NEXTJS',
+          repositoryUrl: '',
+          envRequirements: [],
+          baseHtml: `<section style="font-family:Arial,sans-serif;max-width:900px;margin:40px auto;padding:40px;border:1px solid #e5e7eb;border-radius:16px;background:#ffffff;">
+  <p style="margin:0;color:#0284c7;font-weight:700;letter-spacing:0.04em;">{{hero.tag}}</p>
+  <h1 style="margin:8px 0 10px;font-size:40px;line-height:1.2;">{{hero.title}}</h1>
+  <p style="margin:0 0 18px;color:#475569;font-size:18px;line-height:1.7;">{{hero.subtitle}}</p>
+  <a href="#" style="display:inline-block;text-decoration:none;background:#0f172a;color:#fff;padding:12px 16px;border-radius:10px;">{{hero.ctaText}}</a>
+</section>`,
+          previewData: {
+            hero: {
+              tag: 'TEMPLATE X',
+              title: 'Your next website starts here',
+              subtitle: 'Use this minimal layout to test schema, placeholders, and preview rendering.',
+              ctaText: 'Start Building',
+            },
+          },
+        },
+        cmsSchema: {
+          sections: [
+            {
+              id: 'hero',
+              label: 'Hero',
+              fields: [
+                { key: 'tag', label: 'Tag', type: 'TEXT', defaultValue: 'TEMPLATE X' },
+                { key: 'title', label: 'Title', type: 'TEXT', defaultValue: 'Your next website starts here' },
+                { key: 'subtitle', label: 'Subtitle', type: 'TEXT', defaultValue: 'Use this minimal layout to test schema and placeholders.' },
+                { key: 'ctaText', label: 'CTA Text', type: 'TEXT', defaultValue: 'Start Building' },
+              ],
+            },
+          ],
+        },
+      },
     ];
 
     const names = starters.map((s) => s.name);
