@@ -22,6 +22,8 @@ type TemplateFormBody = {
   baseHtmlUrl?: string;
   deploymentRaw?: string;
   cmsSchemaRaw?: string;
+  baseHtmlTemplate?: string;
+  previewDataRaw?: string;
 };
 
 type ParseResult =
@@ -48,6 +50,12 @@ export class AdminTemplateController {
     return res
       .status(200)
       .send(templatesListPage({ templates, notice }));
+  }
+
+  @Post('seed-starters')
+  async seedStarters(@Res() res: Response) {
+    const created = await this.templateService.seedStarterTemplates();
+    return res.redirect(`/admin/templates?notice=Seeded+${created}+starter+template(s)`);
   }
 
   @Get('new')
@@ -104,6 +112,14 @@ export class AdminTemplateController {
           baseHtmlUrl: template.baseHtmlUrl || '',
           deploymentRaw: JSON.stringify(template.deployment || {}, null, 2),
           cmsSchemaRaw: JSON.stringify(template.cmsSchema || { sections: [] }, null, 2),
+          baseHtmlTemplate:
+            typeof (template.deployment as any)?.baseHtml === 'string'
+              ? (template.deployment as any).baseHtml
+              : '',
+          previewDataRaw:
+            (template.deployment as any)?.previewData
+              ? JSON.stringify((template.deployment as any).previewData, null, 2)
+              : '',
         },
       }),
     );
@@ -163,9 +179,48 @@ export class AdminTemplateController {
         description: body.description?.trim() || undefined,
         type: body.type as TemplateType,
         baseHtmlUrl: body.baseHtmlUrl?.trim() || undefined,
-        deployment,
+        deployment: this.withTemplatePreviewData(
+          deployment,
+          body.baseHtmlTemplate,
+          body.previewDataRaw,
+        ),
         cmsSchema,
       },
     };
+  }
+
+  private withTemplatePreviewData(
+    deployment: Prisma.InputJsonValue,
+    baseHtmlTemplate?: string,
+    previewDataRaw?: string,
+  ): Prisma.InputJsonValue {
+    const DEFAULT_BASE_TEMPLATE = `<section style="font-family:Arial,sans-serif;padding:56px;max-width:980px;margin:0 auto;">
+  <h1 style="font-size:42px;margin:0 0 10px;">{{hero.title}}</h1>
+  <p style="font-size:18px;line-height:1.6;color:#334155;margin:0 0 18px;">{{hero.subtitle}}</p>
+  <a href="#" style="display:inline-block;background:#0f766e;color:#fff;text-decoration:none;padding:12px 18px;border-radius:10px;">{{hero.ctaText}}</a>
+  <div style="margin-top:32px;padding:22px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;">
+    <h2 style="margin:0 0 8px;font-size:28px;">{{about.heading}}</h2>
+    <p style="margin:0;color:#475569;line-height:1.7;">{{about.body}}</p>
+  </div>
+</section>`;
+
+    const deploymentObj: Record<string, Prisma.InputJsonValue> =
+      deployment &&
+      typeof deployment === 'object' &&
+      !Array.isArray(deployment)
+        ? ({ ...(deployment as Prisma.InputJsonObject) } as Record<string, Prisma.InputJsonValue>)
+        : {};
+
+    deploymentObj.baseHtml = (baseHtmlTemplate?.trim() || DEFAULT_BASE_TEMPLATE) as Prisma.InputJsonValue;
+
+    if (previewDataRaw?.trim()) {
+      try {
+        deploymentObj.previewData = JSON.parse(previewDataRaw) as Prisma.InputJsonValue;
+      } catch {
+        // If preview JSON is invalid, skip persisting it; form preview already shows parsing errors.
+      }
+    }
+
+    return deploymentObj as Prisma.InputJsonObject;
   }
 }
