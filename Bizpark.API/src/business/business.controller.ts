@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto, SaveWebsiteConfigDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -52,6 +52,9 @@ export class BusinessController {
         if (!businesses.find(b => b.id === id)) {
             throw new Error('Unauthorized');
         }
+        if (!dto?.templateId || !dto.templateId.trim()) {
+            throw new BadRequestException('templateId is required to save website configuration');
+        }
 
         const website = await this.businessService.saveWebsiteConfig(id, dto);
         return {
@@ -74,12 +77,16 @@ export class BusinessController {
 
         // Just fetching to make sure it exists before we queue
         const business = await this.businessService.getBusinessById(id);
+        const websiteConfig = business?.websites?.[0];
+        if (!websiteConfig?.templateId) {
+            throw new BadRequestException('Website configuration not found. Save configuration first.');
+        }
 
         // Queue the agent task via BullMQ wrapper
         const queuedTask = await this.agentService.queueTask({
             businessId: id,
             taskType: "WEBSITE_GENERATION",
-            inputData: { websiteConfig: business.websites?.[0] || {} }
+            inputData: { websiteConfig }
         });
 
         return {
