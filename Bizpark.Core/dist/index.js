@@ -14,9 +14,5 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prisma = void 0;
 __exportStar(require("./common"), exports);
 __exportStar(require("./typeorm"), exports);
-// Backward-compatible alias for existing imports.
-var db_clients_1 = require("./typeorm/db-clients");
-Object.defineProperty(exports, "prisma", { enumerable: true, get: function () { return db_clients_1.applicationDb; } });

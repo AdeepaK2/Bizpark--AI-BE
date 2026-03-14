@@ -271,8 +271,3 @@ const createRunnerClient = () => ({
 export const applicationDb = createApplicationClient();
 export const adminDb = createAdminClient();
 export const runnerDb = createRunnerClient();
-
-// Backward-compatible aliases for existing consumers.
-export const applicationPrisma = applicationDb;
-export const adminPrisma = adminDb;
-export const runnerPrisma = runnerDb;
