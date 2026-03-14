@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, BadRequestException } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { prisma, CreateAgentTaskDto } from 'bizpark.core';
+import { applicationPrisma, CreateAgentTaskDto } from 'bizpark.core';
 
 @Controller('api/agents')
 export class AgentController {
@@ -13,7 +13,7 @@ export class AgentController {
 
     @Get('tasks/:taskId')
     async getTaskStatus(@Param('taskId') taskId: string): Promise<any> {
-        const task = await prisma.agentTask.findUnique({
+        const task = await applicationPrisma.agentTask.findUnique({
             where: { id: taskId }
         });
         return {
@@ -24,7 +24,7 @@ export class AgentController {
 
     @Get('tasks')
     async getAllTasks(): Promise<any> {
-        return prisma.agentTask.findMany({
+        return applicationPrisma.agentTask.findMany({
             orderBy: { createdAt: 'desc' },
             include: { business: true }
         });

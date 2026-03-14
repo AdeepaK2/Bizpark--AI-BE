@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { prisma, Prisma, TemplateType } from 'bizpark.core';
+import { adminPrisma, Prisma, TemplateType } from 'bizpark.core';
 
 type TemplateInput = {
   name: string;
@@ -13,17 +13,17 @@ type TemplateInput = {
 @Injectable()
 export class AdminTemplateService {
   async listTemplates(): Promise<any[]> {
-    return prisma.template.findMany({
+    return adminPrisma.template.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async getTemplateById(id: string): Promise<any | null> {
-    return prisma.template.findUnique({ where: { id } });
+    return adminPrisma.template.findUnique({ where: { id } });
   }
 
   async createTemplate(input: TemplateInput): Promise<any> {
-    return prisma.template.create({
+    return adminPrisma.template.create({
       data: {
         name: input.name,
         description: input.description,
@@ -36,7 +36,7 @@ export class AdminTemplateService {
   }
 
   async updateTemplate(id: string, input: TemplateInput): Promise<any> {
-    return prisma.template.update({
+    return adminPrisma.template.update({
       where: { id },
       data: {
         name: input.name,
@@ -326,7 +326,7 @@ export class AdminTemplateService {
     ];
 
     const names = starters.map((s) => s.name);
-    const existing = await prisma.template.findMany({
+    const existing = await adminPrisma.template.findMany({
       where: { name: { in: names } },
       select: { name: true },
     });

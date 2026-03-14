@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { prisma, RegisterUserDto, LoginUserDto, JwtPayload } from 'bizpark.core';
+import { applicationPrisma, RegisterUserDto, LoginUserDto, JwtPayload } from 'bizpark.core';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class AuthService {
     constructor(private jwtService: JwtService) { }
 
     async register(dto: RegisterUserDto) {
-        const existingUser = await prisma.user.findUnique({ where: { email: dto.email } });
+        const existingUser = await applicationPrisma.user.findUnique({ where: { email: dto.email } });
         if (existingUser) {
             throw new BadRequestException('Email already in use');
         }
@@ -16,7 +16,7 @@ export class AuthService {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(dto.password, salt);
 
-        const user = await prisma.user.create({
+        const user = await applicationPrisma.user.create({
             data: {
                 email: dto.email,
                 name: dto.name,
@@ -32,7 +32,7 @@ export class AuthService {
     }
 
     async login(dto: LoginUserDto) {
-        const user = await prisma.user.findUnique({ where: { email: dto.email } });
+        const user = await applicationPrisma.user.findUnique({ where: { email: dto.email } });
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }

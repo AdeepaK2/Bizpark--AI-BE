@@ -1,12 +1,10 @@
-import { PrismaClient, TemplateType } from 'bizpark.core';
-
-const prisma = new PrismaClient();
+import { applicationPrisma, TemplateType } from 'bizpark.core';
 
 async function main() {
     console.log('Seeding Templates...');
 
     // 1. Modern Showcase Template
-    const showcaseTemplate = await prisma.template.create({
+    const showcaseTemplate = await applicationPrisma.template.create({
         data: {
             name: 'Modern Startup',
             description: 'A bold, sleek showcase for modern agencies and startups.',
@@ -44,7 +42,7 @@ async function main() {
     console.log(`Created Showcase Template: ${showcaseTemplate.name}`);
 
     // 2. E-Commerce Item Template
-    const ecommerceTemplate = await prisma.template.create({
+    const ecommerceTemplate = await applicationPrisma.template.create({
         data: {
             name: 'Sleek Storefront',
             description: 'A minimalist e-commerce layout optimized for physical and digital products.',
@@ -89,5 +87,5 @@ main()
         process.exit(1);
     })
     .finally(async () => {
-        await prisma.$disconnect();
+        await applicationPrisma.$disconnect();
     });
