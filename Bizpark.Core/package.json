@@ -9,6 +9,8 @@
     "typeorm:app": "typeorm-ts-node-commonjs -d src/typeorm/datasources/application.datasource.ts",
     "typeorm:admin": "typeorm-ts-node-commonjs -d src/typeorm/datasources/admin.datasource.ts",
     "typeorm:runner": "typeorm-ts-node-commonjs -d src/typeorm/datasources/runner.datasource.ts",
+    "db:migrate:split-schemas": "node scripts/migrate-split-schemas.js",
+    "db:rollback:split-schemas": "node scripts/migrate-split-schemas-rollback.js",
     "migration:run:app": "npm run typeorm:app -- migration:run",
     "migration:run:admin": "npm run typeorm:admin -- migration:run",
     "migration:run:runner": "npm run typeorm:runner -- migration:run",

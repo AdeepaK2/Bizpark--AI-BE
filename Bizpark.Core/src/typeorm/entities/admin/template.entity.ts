@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import { BaseEntityWithTimestamps, TemplateType } from '../shared';
 
-@Entity({ name: 'templates' })
+@Entity({ name: 'Template' })
 export class AdminTemplateEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'varchar', length: 255 })
     name!: string;
@@ -12,7 +12,7 @@ export class AdminTemplateEntity extends BaseEntityWithTimestamps {
     @Column({
         type: 'enum',
         enum: TemplateType,
-        enumName: 'template_type_enum',
+        enumName: 'TemplateType',
         default: TemplateType.SHOWCASE,
     })
     type!: TemplateType;

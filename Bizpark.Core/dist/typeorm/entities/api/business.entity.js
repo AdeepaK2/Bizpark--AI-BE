@@ -37,7 +37,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: shared_1.SubscriptionTier,
-        enumName: 'business_subscription_tier_enum',
+        enumName: 'SubscriptionTier',
         default: shared_1.SubscriptionTier.FREE,
     }),
     __metadata("design:type", String)
@@ -51,5 +51,5 @@ __decorate([
     __metadata("design:type", Array)
 ], ApiBusinessEntity.prototype, "websites", void 0);
 exports.ApiBusinessEntity = ApiBusinessEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'businesses' })
+    (0, typeorm_1.Entity)({ name: 'Business' })
 ], ApiBusinessEntity);

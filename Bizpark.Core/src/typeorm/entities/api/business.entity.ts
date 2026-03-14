@@ -3,7 +3,7 @@ import { BaseEntityWithTimestamps, SubscriptionTier } from '../shared';
 import { ApiBusinessUserEntity } from './business-user.entity';
 import { ApiWebsiteEntity } from './website.entity';
 
-@Entity({ name: 'businesses' })
+@Entity({ name: 'Business' })
 export class ApiBusinessEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'varchar', length: 255 })
     name!: string;
@@ -20,7 +20,7 @@ export class ApiBusinessEntity extends BaseEntityWithTimestamps {
     @Column({
         type: 'enum',
         enum: SubscriptionTier,
-        enumName: 'business_subscription_tier_enum',
+        enumName: 'SubscriptionTier',
         default: SubscriptionTier.FREE,
     })
     subscriptionTier!: SubscriptionTier;

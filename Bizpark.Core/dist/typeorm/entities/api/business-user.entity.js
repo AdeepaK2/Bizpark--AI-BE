@@ -29,7 +29,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: shared_1.UserRole,
-        enumName: 'business_user_role_enum',
+        enumName: 'UserRole',
         default: shared_1.UserRole.EDITOR,
     }),
     __metadata("design:type", String)
@@ -49,5 +49,5 @@ __decorate([
     __metadata("design:type", business_entity_1.ApiBusinessEntity)
 ], ApiBusinessUserEntity.prototype, "business", void 0);
 exports.ApiBusinessUserEntity = ApiBusinessUserEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'business_users' })
+    (0, typeorm_1.Entity)({ name: 'BusinessUser' })
 ], ApiBusinessUserEntity);

@@ -27,7 +27,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: shared_1.TemplateType,
-        enumName: 'template_type_enum',
+        enumName: 'TemplateType',
         default: shared_1.TemplateType.SHOWCASE,
     }),
     __metadata("design:type", String)
@@ -45,5 +45,5 @@ __decorate([
     __metadata("design:type", Object)
 ], AdminTemplateEntity.prototype, "baseHtmlUrl", void 0);
 exports.AdminTemplateEntity = AdminTemplateEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'templates' })
+    (0, typeorm_1.Entity)({ name: 'Template' })
 ], AdminTemplateEntity);

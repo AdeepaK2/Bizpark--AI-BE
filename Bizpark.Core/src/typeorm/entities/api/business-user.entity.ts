@@ -3,7 +3,7 @@ import { UserRole } from '../shared';
 import { ApiBusinessEntity } from './business.entity';
 import { ApiUserEntity } from './user.entity';
 
-@Entity({ name: 'business_users' })
+@Entity({ name: 'BusinessUser' })
 export class ApiBusinessUserEntity {
     @PrimaryColumn({ type: 'uuid' })
     userId!: string;
@@ -14,7 +14,7 @@ export class ApiBusinessUserEntity {
     @Column({
         type: 'enum',
         enum: UserRole,
-        enumName: 'business_user_role_enum',
+        enumName: 'UserRole',
         default: UserRole.EDITOR,
     })
     role!: UserRole;

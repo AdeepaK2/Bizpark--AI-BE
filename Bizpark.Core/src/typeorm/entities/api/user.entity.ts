@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntityWithTimestamps } from '../shared';
 import { ApiBusinessUserEntity } from './business-user.entity';
 
-@Entity({ name: 'users' })
+@Entity({ name: 'User' })
 export class ApiUserEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'varchar', length: 255, unique: true })
     email!: string;

@@ -23,7 +23,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: shared_1.TaskType,
-        enumName: 'agent_task_type_enum',
+        enumName: 'TaskType',
     }),
     __metadata("design:type", String)
 ], RunnerAgentTaskEntity.prototype, "taskType", void 0);
@@ -31,7 +31,7 @@ __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
         enum: shared_1.TaskStatus,
-        enumName: 'agent_task_status_enum',
+        enumName: 'TaskStatus',
         default: shared_1.TaskStatus.QUEUED,
     }),
     __metadata("design:type", String)
@@ -49,5 +49,5 @@ __decorate([
     __metadata("design:type", Object)
 ], RunnerAgentTaskEntity.prototype, "logs", void 0);
 exports.RunnerAgentTaskEntity = RunnerAgentTaskEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'agent_tasks' })
+    (0, typeorm_1.Entity)({ name: 'AgentTask' })
 ], RunnerAgentTaskEntity);

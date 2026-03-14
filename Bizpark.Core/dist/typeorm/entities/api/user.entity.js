@@ -33,5 +33,5 @@ __decorate([
     __metadata("design:type", Array)
 ], ApiUserEntity.prototype, "businesses", void 0);
 exports.ApiUserEntity = ApiUserEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'users' })
+    (0, typeorm_1.Entity)({ name: 'User' })
 ], ApiUserEntity);

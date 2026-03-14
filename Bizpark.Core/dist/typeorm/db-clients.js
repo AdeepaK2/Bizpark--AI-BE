@@ -31,7 +31,7 @@ const resolveOrder = (direction) => {
 const createApplicationClient = () => ({
     user: {
         findUnique: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             const repo = ds.getRepository(entities_1.ApiUserEntity);
             if (args.where.id) {
                 return repo.findOne({ where: { id: args.where.id } });
@@ -42,7 +42,7 @@ const createApplicationClient = () => ({
             return null;
         },
         create: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             const repo = ds.getRepository(entities_1.ApiUserEntity);
             const entity = repo.create(args.data);
             return repo.save(entity);
@@ -50,7 +50,7 @@ const createApplicationClient = () => ({
     },
     business: {
         create: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             return ds.transaction(async (manager) => {
                 const { users, ...businessData } = args.data;
                 const business = manager.create(entities_1.ApiBusinessEntity, businessData);
@@ -72,7 +72,7 @@ const createApplicationClient = () => ({
             });
         },
         findMany: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             const repo = ds.getRepository(entities_1.ApiBusinessEntity);
             const qb = repo.createQueryBuilder('business');
             const userId = args?.where?.users?.some?.userId;
@@ -87,7 +87,7 @@ const createApplicationClient = () => ({
             return qb.getMany();
         },
         findUnique: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             const repo = ds.getRepository(entities_1.ApiBusinessEntity);
             return repo.findOne({
                 where: { id: args.where.id },
@@ -97,7 +97,7 @@ const createApplicationClient = () => ({
     },
     website: {
         upsert: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.applicationDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getApplicationDataSource)());
             const repo = ds.getRepository(entities_1.ApiWebsiteEntity);
             const domain = args.where.domain ?? args.create.domain ?? null;
             const existing = domain ? await repo.findOne({ where: { domain } }) : null;
@@ -113,15 +113,16 @@ const createApplicationClient = () => ({
         },
     },
     $disconnect: async () => {
-        if (datasources_1.applicationDataSource.isInitialized) {
-            await datasources_1.applicationDataSource.destroy();
+        const ds = (0, datasources_1.getApplicationDataSource)();
+        if (ds.isInitialized) {
+            await ds.destroy();
         }
     },
 });
 const createAdminClient = () => ({
     template: {
         findMany: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.adminDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getAdminDataSource)());
             const repo = ds.getRepository(entities_1.AdminTemplateEntity);
             const where = {};
             if (args?.where?.type) {
@@ -150,18 +151,18 @@ const createAdminClient = () => ({
             });
         },
         findUnique: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.adminDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getAdminDataSource)());
             const repo = ds.getRepository(entities_1.AdminTemplateEntity);
             return repo.findOne({ where: { id: args.where.id } });
         },
         create: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.adminDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getAdminDataSource)());
             const repo = ds.getRepository(entities_1.AdminTemplateEntity);
             const entity = repo.create(args.data);
             return repo.save(entity);
         },
         update: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.adminDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getAdminDataSource)());
             const repo = ds.getRepository(entities_1.AdminTemplateEntity);
             const existing = await repo.findOne({ where: { id: args.where.id } });
             if (!existing) {
@@ -172,21 +173,22 @@ const createAdminClient = () => ({
         },
     },
     $disconnect: async () => {
-        if (datasources_1.adminDataSource.isInitialized) {
-            await datasources_1.adminDataSource.destroy();
+        const ds = (0, datasources_1.getAdminDataSource)();
+        if (ds.isInitialized) {
+            await ds.destroy();
         }
     },
 });
 const createRunnerClient = () => ({
     agentTask: {
         create: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.runnerDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getRunnerDataSource)());
             const repo = ds.getRepository(entities_1.RunnerAgentTaskEntity);
             const entity = repo.create(args.data);
             return repo.save(entity);
         },
         update: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.runnerDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getRunnerDataSource)());
             const repo = ds.getRepository(entities_1.RunnerAgentTaskEntity);
             const existing = await repo.findOne({ where: { id: args.where.id } });
             if (!existing) {
@@ -196,12 +198,12 @@ const createRunnerClient = () => ({
             return repo.save(existing);
         },
         findUnique: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.runnerDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getRunnerDataSource)());
             const repo = ds.getRepository(entities_1.RunnerAgentTaskEntity);
             return repo.findOne({ where: { id: args.where.id } });
         },
         findMany: async (args) => {
-            const ds = await ensureDataSourceInitialized(datasources_1.runnerDataSource);
+            const ds = await ensureDataSourceInitialized((0, datasources_1.getRunnerDataSource)());
             const repo = ds.getRepository(entities_1.RunnerAgentTaskEntity);
             return repo.find({
                 order: args?.orderBy?.createdAt
@@ -211,8 +213,9 @@ const createRunnerClient = () => ({
         },
     },
     $disconnect: async () => {
-        if (datasources_1.runnerDataSource.isInitialized) {
-            await datasources_1.runnerDataSource.destroy();
+        const ds = (0, datasources_1.getRunnerDataSource)();
+        if (ds.isInitialized) {
+            await ds.destroy();
         }
     },
 });

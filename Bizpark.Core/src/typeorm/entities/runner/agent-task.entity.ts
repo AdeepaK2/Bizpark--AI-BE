@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import { BaseEntityWithTimestamps, TaskStatus, TaskType } from '../shared';
 
-@Entity({ name: 'agent_tasks' })
+@Entity({ name: 'AgentTask' })
 export class RunnerAgentTaskEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'varchar', length: 255 })
     businessId!: string;
@@ -9,14 +9,14 @@ export class RunnerAgentTaskEntity extends BaseEntityWithTimestamps {
     @Column({
         type: 'enum',
         enum: TaskType,
-        enumName: 'agent_task_type_enum',
+        enumName: 'TaskType',
     })
     taskType!: TaskType;
 
     @Column({
         type: 'enum',
         enum: TaskStatus,
-        enumName: 'agent_task_status_enum',
+        enumName: 'TaskStatus',
         default: TaskStatus.QUEUED,
     })
     status!: TaskStatus;

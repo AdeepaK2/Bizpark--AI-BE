@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntityWithTimestamps } from '../shared';
 import { ApiBusinessEntity } from './business.entity';
 
-@Entity({ name: 'websites' })
+@Entity({ name: 'Website' })
 export class ApiWebsiteEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'uuid' })
     businessId!: string;

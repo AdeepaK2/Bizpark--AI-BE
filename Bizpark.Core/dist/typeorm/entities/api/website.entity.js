@@ -42,5 +42,5 @@ __decorate([
     __metadata("design:type", business_entity_1.ApiBusinessEntity)
 ], ApiWebsiteEntity.prototype, "business", void 0);
 exports.ApiWebsiteEntity = ApiWebsiteEntity = __decorate([
-    (0, typeorm_1.Entity)({ name: 'websites' })
+    (0, typeorm_1.Entity)({ name: 'Website' })
 ], ApiWebsiteEntity);
