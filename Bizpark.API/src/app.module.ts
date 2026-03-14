@@ -7,12 +7,15 @@ import { BusinessModule } from './business/business.module';
 import { AuthModule } from './auth/auth.module';
 import { TemplateModule } from './template/template.module';
 
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = Number(process.env.REDIS_PORT || 6379);
+
 @Module({
   imports: [
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
-        port: 6379,
+        host: redisHost,
+        port: Number.isNaN(redisPort) ? 6379 : redisPort,
       },
     }),
     AgentModule,
