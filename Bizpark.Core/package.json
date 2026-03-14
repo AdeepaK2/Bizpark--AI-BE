@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "db:bootstrap": "node scripts/bootstrap-db.js",
     "typeorm:app": "typeorm-ts-node-commonjs -d src/typeorm/datasources/application.datasource.ts",
     "typeorm:admin": "typeorm-ts-node-commonjs -d src/typeorm/datasources/admin.datasource.ts",
     "typeorm:runner": "typeorm-ts-node-commonjs -d src/typeorm/datasources/runner.datasource.ts",
