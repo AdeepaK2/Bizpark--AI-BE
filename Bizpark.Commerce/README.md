@@ -19,10 +19,12 @@ It is tenant-aware and designed to support:
 - `tenant`: tenant resolution middleware and request context
 - `auth`: JWT-based auth scaffold
 - `catalog`: product scaffold
+- `inventory`: stock and reservation scaffold
 - `customers`: customer scaffold
 - `cart`: cart scaffold
 - `checkout`: checkout scaffold
 - `orders`: order scaffold
+- `shipping`: method and quote scaffold
 - `subscriptions`: subscription scaffold
 - `payments`: payment scaffold
 

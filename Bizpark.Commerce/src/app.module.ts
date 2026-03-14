@@ -7,9 +7,11 @@ import { CartModule } from './cart/cart.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { CustomersModule } from './customers/customers.module';
+import { InventoryModule } from './inventory/inventory.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { COMMERCE_JOBS_QUEUE } from './queues/queue.constants';
+import { ShippingModule } from './shipping/shipping.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { TenantModule } from './tenant/tenant.module';
 import { TenantMiddleware } from './tenant/tenant.middleware';
@@ -31,10 +33,12 @@ const redisPort = Number(process.env.REDIS_PORT || 6379);
     TenantModule,
     AuthModule,
     CatalogModule,
+    InventoryModule,
     CustomersModule,
     CartModule,
     CheckoutModule,
     OrdersModule,
+    ShippingModule,
     SubscriptionsModule,
     PaymentsModule,
   ],
