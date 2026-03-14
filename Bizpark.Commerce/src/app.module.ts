@@ -1,0 +1,51 @@
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { BullModule } from '@nestjs/bullmq';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { CartModule } from './cart/cart.module';
+import { CatalogModule } from './catalog/catalog.module';
+import { CheckoutModule } from './checkout/checkout.module';
+import { CustomersModule } from './customers/customers.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
+import { COMMERCE_JOBS_QUEUE } from './queues/queue.constants';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { TenantModule } from './tenant/tenant.module';
+import { TenantMiddleware } from './tenant/tenant.middleware';
+
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = Number(process.env.REDIS_PORT || 6379);
+
+@Module({
+  imports: [
+    BullModule.forRoot({
+      connection: {
+        host: redisHost,
+        port: Number.isNaN(redisPort) ? 6379 : redisPort,
+      },
+    }),
+    BullModule.registerQueue({
+      name: COMMERCE_JOBS_QUEUE,
+    }),
+    TenantModule,
+    AuthModule,
+    CatalogModule,
+    CustomersModule,
+    CartModule,
+    CheckoutModule,
+    OrdersModule,
+    SubscriptionsModule,
+    PaymentsModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TenantMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

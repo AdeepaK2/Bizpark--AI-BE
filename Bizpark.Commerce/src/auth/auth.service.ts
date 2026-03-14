@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -27,7 +28,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user: CommerceUser = {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       tenantId,
       email: normalizedEmail,
       name: name.trim(),
