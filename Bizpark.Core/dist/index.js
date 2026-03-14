@@ -18,5 +18,5 @@ exports.prisma = void 0;
 __exportStar(require("./common"), exports);
 __exportStar(require("./typeorm"), exports);
 // Backward-compatible alias for existing imports.
-var prisma_like_clients_1 = require("./typeorm/prisma-like-clients");
-Object.defineProperty(exports, "prisma", { enumerable: true, get: function () { return prisma_like_clients_1.applicationPrisma; } });
+var db_clients_1 = require("./typeorm/db-clients");
+Object.defineProperty(exports, "prisma", { enumerable: true, get: function () { return db_clients_1.applicationDb; } });

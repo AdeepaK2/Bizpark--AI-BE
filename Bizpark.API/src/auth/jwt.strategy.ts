@@ -1,7 +1,7 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { applicationPrisma, JwtPayload } from 'bizpark.core';
+import { applicationDb, JwtPayload } from 'bizpark.core';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload) {
-        const user = await applicationPrisma.user.findUnique({ where: { id: payload.sub } });
+        const user = await applicationDb.user.findUnique({ where: { id: payload.sub } });
         if (!user) {
             throw new UnauthorizedException();
         }

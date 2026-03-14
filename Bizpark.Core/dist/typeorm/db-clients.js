@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runnerPrisma = exports.adminPrisma = exports.applicationPrisma = void 0;
+exports.runnerPrisma = exports.adminPrisma = exports.applicationPrisma = exports.runnerDb = exports.adminDb = exports.applicationDb = void 0;
 const typeorm_1 = require("typeorm");
 const datasources_1 = require("./datasources");
 const entities_1 = require("./entities");
@@ -216,6 +216,10 @@ const createRunnerClient = () => ({
         }
     },
 });
-exports.applicationPrisma = createApplicationClient();
-exports.adminPrisma = createAdminClient();
-exports.runnerPrisma = createRunnerClient();
+exports.applicationDb = createApplicationClient();
+exports.adminDb = createAdminClient();
+exports.runnerDb = createRunnerClient();
+// Backward-compatible aliases for existing consumers.
+exports.applicationPrisma = exports.applicationDb;
+exports.adminPrisma = exports.adminDb;
+exports.runnerPrisma = exports.runnerDb;

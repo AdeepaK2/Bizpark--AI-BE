@@ -8,7 +8,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { Prisma, TemplateType } from 'bizpark.core';
+import { JsonObject, JsonValue, TemplateType } from 'bizpark.core';
 import { AdminTemplateService } from './admin-template.service';
 import {
   templateFormPage,
@@ -35,8 +35,8 @@ type ParseResult =
         description?: string;
         type: TemplateType;
         baseHtmlUrl?: string;
-        deployment: Prisma.InputJsonValue;
-        cmsSchema: Prisma.InputJsonValue;
+        deployment: JsonValue;
+        cmsSchema: JsonValue;
       };
     };
 
@@ -155,19 +155,19 @@ export class AdminTemplateController {
       return { ok: false, error: 'Template type is invalid.' };
     }
 
-    let deployment: Prisma.InputJsonValue = {};
-    let cmsSchema: Prisma.InputJsonValue = { sections: [] };
+    let deployment: JsonValue = {};
+    let cmsSchema: JsonValue = { sections: [] };
     try {
       deployment = (body.deploymentRaw?.trim()
         ? JSON.parse(body.deploymentRaw)
-        : {}) as Prisma.InputJsonValue;
+        : {}) as JsonValue;
     } catch {
       return { ok: false, error: 'Deployment JSON is invalid.' };
     }
     try {
       cmsSchema = (body.cmsSchemaRaw?.trim()
         ? JSON.parse(body.cmsSchemaRaw)
-        : { sections: [] }) as Prisma.InputJsonValue;
+        : { sections: [] }) as JsonValue;
     } catch {
       return { ok: false, error: 'CMS Schema JSON is invalid.' };
     }
@@ -190,10 +190,10 @@ export class AdminTemplateController {
   }
 
   private withTemplatePreviewData(
-    deployment: Prisma.InputJsonValue,
+    deployment: JsonValue,
     baseHtmlTemplate?: string,
     previewDataRaw?: string,
-  ): Prisma.InputJsonValue {
+  ): JsonValue {
     const DEFAULT_BASE_TEMPLATE = `<section style="font-family:Arial,sans-serif;padding:56px;max-width:980px;margin:0 auto;">
   <h1 style="font-size:42px;margin:0 0 10px;">{{hero.title}}</h1>
   <p style="font-size:18px;line-height:1.6;color:#334155;margin:0 0 18px;">{{hero.subtitle}}</p>
@@ -204,23 +204,23 @@ export class AdminTemplateController {
   </div>
 </section>`;
 
-    const deploymentObj: Record<string, Prisma.InputJsonValue> =
+    const deploymentObj: Record<string, JsonValue> =
       deployment &&
       typeof deployment === 'object' &&
       !Array.isArray(deployment)
-        ? ({ ...(deployment as Prisma.InputJsonObject) } as Record<string, Prisma.InputJsonValue>)
+        ? ({ ...(deployment as JsonObject) } as Record<string, JsonValue>)
         : {};
 
-    deploymentObj.baseHtml = (baseHtmlTemplate?.trim() || DEFAULT_BASE_TEMPLATE) as Prisma.InputJsonValue;
+    deploymentObj.baseHtml = (baseHtmlTemplate?.trim() || DEFAULT_BASE_TEMPLATE) as JsonValue;
 
     if (previewDataRaw?.trim()) {
       try {
-        deploymentObj.previewData = JSON.parse(previewDataRaw) as Prisma.InputJsonValue;
+        deploymentObj.previewData = JSON.parse(previewDataRaw) as JsonValue;
       } catch {
         // If preview JSON is invalid, skip persisting it; form preview already shows parsing errors.
       }
     }
 
-    return deploymentObj as Prisma.InputJsonObject;
+    return deploymentObj as JsonObject;
   }
 }

@@ -1,10 +1,10 @@
-import { adminPrisma, TemplateType } from 'bizpark.core';
+import { adminDb, TemplateType } from 'bizpark.core';
 
 async function main() {
     console.log('Seeding Templates...');
 
     // 1. Modern Showcase Template
-    const showcaseTemplate = await adminPrisma.template.create({
+    const showcaseTemplate = await adminDb.template.create({
         data: {
             name: 'Modern Startup',
             description: 'A bold, sleek showcase for modern agencies and startups.',
@@ -42,7 +42,7 @@ async function main() {
     console.log(`Created Showcase Template: ${showcaseTemplate.name}`);
 
     // 2. E-Commerce Item Template
-    const ecommerceTemplate = await adminPrisma.template.create({
+    const ecommerceTemplate = await adminDb.template.create({
         data: {
             name: 'Sleek Storefront',
             description: 'A minimalist e-commerce layout optimized for physical and digital products.',
@@ -87,5 +87,5 @@ main()
         process.exit(1);
     })
     .finally(async () => {
-        await adminPrisma.$disconnect();
+        await adminDb.$disconnect();
     });

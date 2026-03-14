@@ -1,6 +1,6 @@
 # TypeORM Scaffold
 
-This folder provides a domain-split TypeORM layout while keeping Prisma active during migration.
+This folder provides a domain-split TypeORM layout.
 
 ## Structure
 

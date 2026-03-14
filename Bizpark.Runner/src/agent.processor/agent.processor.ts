@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { runnerPrisma, TaskStatus } from 'bizpark.core';
+import { runnerDb, TaskStatus } from 'bizpark.core';
 
 @Processor('agent-queue')
 export class AgentProcessor extends WorkerHost {
@@ -12,7 +12,7 @@ export class AgentProcessor extends WorkerHost {
         this.logger.log(`[AGENT START] BullMQ Task ${taskId} [${taskType}]: Processing agent task for business ${businessId}...`);
 
         // Create the generic task in the database
-        await runnerPrisma.agentTask.create({
+        await runnerDb.agentTask.create({
             data: {
                 id: taskId,
                 businessId,
@@ -26,7 +26,7 @@ export class AgentProcessor extends WorkerHost {
         await new Promise(resolve => setTimeout(resolve, 3000));
 
         // Update the task to completed
-        await runnerPrisma.agentTask.update({
+        await runnerDb.agentTask.update({
             where: { id: taskId },
             data: { status: TaskStatus.COMPLETED, outputData: { generatedContent: 'Genkit Mock Response' } }
         });

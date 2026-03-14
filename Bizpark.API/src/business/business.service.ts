@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { applicationPrisma, CreateBusinessDto } from 'bizpark.core';
+import { applicationDb, CreateBusinessDto } from 'bizpark.core';
 
 @Injectable()
 export class BusinessService {
     async createBusiness(dto: CreateBusinessDto, userId: string) {
-        return applicationPrisma.business.create({
+        return applicationDb.business.create({
             data: {
                 ...dto,
                 users: {
@@ -17,7 +17,7 @@ export class BusinessService {
         });
     }
     async getBusinessesForUser(userId: string) {
-        return applicationPrisma.business.findMany({
+        return applicationDb.business.findMany({
             where: {
                 users: {
                     some: { userId: userId }
@@ -28,7 +28,7 @@ export class BusinessService {
     }
 
     async getBusinessById(id: string): Promise<any> {
-        return applicationPrisma.business.findUnique({
+        return applicationDb.business.findUnique({
             where: { id },
             include: { websites: true }
         });
@@ -38,7 +38,7 @@ export class BusinessService {
         // Upsert website info.
         // In this iteration, we assume one website per business.
         const domain = `${businessId}-local`;
-        return applicationPrisma.website.upsert({
+        return applicationDb.website.upsert({
             where: { domain },
             update: {
                 templateId: dto.templateId,

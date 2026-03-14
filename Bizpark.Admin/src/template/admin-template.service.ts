@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
-import { adminPrisma, Prisma, TemplateType } from 'bizpark.core';
+import { adminDb, JsonValue, TemplateType } from 'bizpark.core';
 
 type TemplateInput = {
   name: string;
   description?: string;
   type: TemplateType;
-  deployment: Prisma.InputJsonValue;
-  cmsSchema: Prisma.InputJsonValue;
+  deployment: JsonValue;
+  cmsSchema: JsonValue;
   baseHtmlUrl?: string;
 };
 
 @Injectable()
 export class AdminTemplateService {
   async listTemplates(): Promise<any[]> {
-    return adminPrisma.template.findMany({
+    return adminDb.template.findMany({
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async getTemplateById(id: string): Promise<any | null> {
-    return adminPrisma.template.findUnique({ where: { id } });
+    return adminDb.template.findUnique({ where: { id } });
   }
 
   async createTemplate(input: TemplateInput): Promise<any> {
-    return adminPrisma.template.create({
+    return adminDb.template.create({
       data: {
         name: input.name,
         description: input.description,
@@ -36,7 +36,7 @@ export class AdminTemplateService {
   }
 
   async updateTemplate(id: string, input: TemplateInput): Promise<any> {
-    return adminPrisma.template.update({
+    return adminDb.template.update({
       where: { id },
       data: {
         name: input.name,
@@ -326,7 +326,7 @@ export class AdminTemplateService {
     ];
 
     const names = starters.map((s) => s.name);
-    const existing = await adminPrisma.template.findMany({
+    const existing = await adminDb.template.findMany({
       where: { name: { in: names } },
       select: { name: true },
     });
