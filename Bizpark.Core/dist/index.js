@@ -14,26 +14,9 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prisma = exports.runnerPrisma = exports.adminPrisma = exports.applicationPrisma = void 0;
-const client_1 = require("@prisma/client");
-__exportStar(require("@prisma/client"), exports);
+exports.prisma = void 0;
 __exportStar(require("./common"), exports);
 __exportStar(require("./typeorm"), exports);
-const globalForPrisma = global;
-const createPrismaClient = (urlEnvVar) => {
-    const url = process.env[urlEnvVar] || process.env.DATABASE_URL;
-    return new client_1.PrismaClient({
-        log: ['query'],
-        ...(url ? { datasources: { db: { url } } } : {}),
-    });
-};
-exports.applicationPrisma = globalForPrisma.applicationPrisma || createPrismaClient('APPLICATION_DATABASE_URL');
-exports.adminPrisma = globalForPrisma.adminPrisma || createPrismaClient('ADMIN_DATABASE_URL');
-exports.runnerPrisma = globalForPrisma.runnerPrisma || createPrismaClient('RUNNER_DATABASE_URL');
 // Backward-compatible alias for existing imports.
-exports.prisma = exports.applicationPrisma;
-if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.applicationPrisma = exports.applicationPrisma;
-    globalForPrisma.adminPrisma = exports.adminPrisma;
-    globalForPrisma.runnerPrisma = exports.runnerPrisma;
-}
+var prisma_like_clients_1 = require("./typeorm/prisma-like-clients");
+Object.defineProperty(exports, "prisma", { enumerable: true, get: function () { return prisma_like_clients_1.applicationPrisma; } });

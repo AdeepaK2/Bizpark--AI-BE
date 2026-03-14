@@ -1,9 +1,9 @@
-import { BaseEntityWithTimestamps, OrmTemplateType } from '../shared';
+import { BaseEntityWithTimestamps, TemplateType } from '../shared';
 export declare class AdminTemplateEntity extends BaseEntityWithTimestamps {
     name: string;
     description: string | null;
-    type: OrmTemplateType;
-    deployment: Record<string, unknown>;
-    cmsSchema: Record<string, unknown>;
+    type: TemplateType;
+    deployment: unknown;
+    cmsSchema: unknown;
     baseHtmlUrl: string | null;
 }

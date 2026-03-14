@@ -22,7 +22,7 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: shared_1.OrmRunnerTaskType,
+        enum: shared_1.TaskType,
         enumName: 'agent_task_type_enum',
     }),
     __metadata("design:type", String)
@@ -30,9 +30,9 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: shared_1.OrmRunnerTaskStatus,
+        enum: shared_1.TaskStatus,
         enumName: 'agent_task_status_enum',
-        default: shared_1.OrmRunnerTaskStatus.QUEUED,
+        default: shared_1.TaskStatus.QUEUED,
     }),
     __metadata("design:type", String)
 ], RunnerAgentTaskEntity.prototype, "status", void 0);

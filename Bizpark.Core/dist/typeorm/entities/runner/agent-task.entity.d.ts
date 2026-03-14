@@ -1,9 +1,9 @@
-import { BaseEntityWithTimestamps, OrmRunnerTaskStatus, OrmRunnerTaskType } from '../shared';
+import { BaseEntityWithTimestamps, TaskStatus, TaskType } from '../shared';
 export declare class RunnerAgentTaskEntity extends BaseEntityWithTimestamps {
     businessId: string;
-    taskType: OrmRunnerTaskType;
-    status: OrmRunnerTaskStatus;
-    inputData: Record<string, unknown>;
-    outputData: Record<string, unknown> | null;
+    taskType: TaskType;
+    status: TaskStatus;
+    inputData: unknown;
+    outputData: unknown;
     logs: string | null;
 }

@@ -1,5 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import { BaseEntityWithTimestamps, OrmRunnerTaskStatus, OrmRunnerTaskType } from '../shared';
+import { BaseEntityWithTimestamps, TaskStatus, TaskType } from '../shared';
 
 @Entity({ name: 'agent_tasks' })
 export class RunnerAgentTaskEntity extends BaseEntityWithTimestamps {
@@ -8,24 +8,24 @@ export class RunnerAgentTaskEntity extends BaseEntityWithTimestamps {
 
     @Column({
         type: 'enum',
-        enum: OrmRunnerTaskType,
+        enum: TaskType,
         enumName: 'agent_task_type_enum',
     })
-    taskType!: OrmRunnerTaskType;
+    taskType!: TaskType;
 
     @Column({
         type: 'enum',
-        enum: OrmRunnerTaskStatus,
+        enum: TaskStatus,
         enumName: 'agent_task_status_enum',
-        default: OrmRunnerTaskStatus.QUEUED,
+        default: TaskStatus.QUEUED,
     })
-    status!: OrmRunnerTaskStatus;
+    status!: TaskStatus;
 
     @Column({ type: 'jsonb', default: () => "'{}'::jsonb" })
-    inputData!: Record<string, unknown>;
+    inputData!: unknown;
 
     @Column({ type: 'jsonb', nullable: true })
-    outputData!: Record<string, unknown> | null;
+    outputData!: unknown;
 
     @Column({ type: 'text', nullable: true })
     logs!: string | null;

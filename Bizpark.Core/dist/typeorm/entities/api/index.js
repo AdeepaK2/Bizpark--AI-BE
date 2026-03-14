@@ -16,5 +16,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.API_ENTITIES = void 0;
 const business_entity_1 = require("./business.entity");
-exports.API_ENTITIES = [business_entity_1.ApiBusinessEntity];
+const business_user_entity_1 = require("./business-user.entity");
+const user_entity_1 = require("./user.entity");
+const website_entity_1 = require("./website.entity");
+exports.API_ENTITIES = [user_entity_1.ApiUserEntity, business_entity_1.ApiBusinessEntity, business_user_entity_1.ApiBusinessUserEntity, website_entity_1.ApiWebsiteEntity];
 __exportStar(require("./business.entity"), exports);
+__exportStar(require("./business-user.entity"), exports);
+__exportStar(require("./user.entity"), exports);
+__exportStar(require("./website.entity"), exports);

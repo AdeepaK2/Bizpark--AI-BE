@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { applicationPrisma, TemplateType } from 'bizpark.core';
+import { adminPrisma, TemplateType } from 'bizpark.core';
 
 @Injectable()
 export class TemplateService {
@@ -11,7 +11,7 @@ export class TemplateService {
         cmsSchema: any;  // JSON
         baseHtmlUrl?: string;
     }): Promise<any> {
-        return applicationPrisma.template.create({
+        return adminPrisma.template.create({
             data: {
                 name: data.name,
                 description: data.description,
@@ -24,20 +24,20 @@ export class TemplateService {
     }
 
     async getAllTemplates(): Promise<any> {
-        return applicationPrisma.template.findMany({
+        return adminPrisma.template.findMany({
             orderBy: { createdAt: 'desc' }
         });
     }
 
     async getTemplatesByType(type: TemplateType): Promise<any> {
-        return applicationPrisma.template.findMany({
+        return adminPrisma.template.findMany({
             where: { type },
             orderBy: { createdAt: 'desc' }
         });
     }
 
     async getTemplateById(id: string): Promise<any> {
-        return applicationPrisma.template.findUnique({
+        return adminPrisma.template.findUnique({
             where: { id }
         });
     }

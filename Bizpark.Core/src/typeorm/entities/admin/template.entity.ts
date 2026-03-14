@@ -1,5 +1,5 @@
 import { Column, Entity } from 'typeorm';
-import { BaseEntityWithTimestamps, OrmTemplateType } from '../shared';
+import { BaseEntityWithTimestamps, TemplateType } from '../shared';
 
 @Entity({ name: 'templates' })
 export class AdminTemplateEntity extends BaseEntityWithTimestamps {
@@ -11,17 +11,17 @@ export class AdminTemplateEntity extends BaseEntityWithTimestamps {
 
     @Column({
         type: 'enum',
-        enum: OrmTemplateType,
+        enum: TemplateType,
         enumName: 'template_type_enum',
-        default: OrmTemplateType.SHOWCASE,
+        default: TemplateType.SHOWCASE,
     })
-    type!: OrmTemplateType;
+    type!: TemplateType;
 
     @Column({ type: 'jsonb', default: () => "'{}'::jsonb" })
-    deployment!: Record<string, unknown>;
+    deployment!: unknown;
 
     @Column({ type: 'jsonb', default: () => "'{}'::jsonb" })
-    cmsSchema!: Record<string, unknown>;
+    cmsSchema!: unknown;
 
     @Column({ type: 'text', nullable: true })
     baseHtmlUrl!: string | null;

@@ -26,9 +26,9 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: shared_1.OrmTemplateType,
+        enum: shared_1.TemplateType,
         enumName: 'template_type_enum',
-        default: shared_1.OrmTemplateType.SHOWCASE,
+        default: shared_1.TemplateType.SHOWCASE,
     }),
     __metadata("design:type", String)
 ], AdminTemplateEntity.prototype, "type", void 0);

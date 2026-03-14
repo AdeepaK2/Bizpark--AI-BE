@@ -1,3 +1,9 @@
 import { ApiBusinessEntity } from './business.entity';
-export declare const API_ENTITIES: (typeof ApiBusinessEntity)[];
+import { ApiBusinessUserEntity } from './business-user.entity';
+import { ApiUserEntity } from './user.entity';
+import { ApiWebsiteEntity } from './website.entity';
+export declare const API_ENTITIES: (typeof ApiUserEntity | typeof ApiBusinessUserEntity | typeof ApiBusinessEntity | typeof ApiWebsiteEntity)[];
 export * from './business.entity';
+export * from './business-user.entity';
+export * from './user.entity';
+export * from './website.entity';

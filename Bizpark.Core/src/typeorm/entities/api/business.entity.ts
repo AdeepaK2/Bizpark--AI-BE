@@ -1,5 +1,7 @@
-import { Column, Entity } from 'typeorm';
-import { BaseEntityWithTimestamps, OrmSubscriptionTier } from '../shared';
+import { Column, Entity, OneToMany } from 'typeorm';
+import { BaseEntityWithTimestamps, SubscriptionTier } from '../shared';
+import { ApiBusinessUserEntity } from './business-user.entity';
+import { ApiWebsiteEntity } from './website.entity';
 
 @Entity({ name: 'businesses' })
 export class ApiBusinessEntity extends BaseEntityWithTimestamps {
@@ -17,9 +19,15 @@ export class ApiBusinessEntity extends BaseEntityWithTimestamps {
 
     @Column({
         type: 'enum',
-        enum: OrmSubscriptionTier,
+        enum: SubscriptionTier,
         enumName: 'business_subscription_tier_enum',
-        default: OrmSubscriptionTier.FREE,
+        default: SubscriptionTier.FREE,
     })
-    subscriptionTier!: OrmSubscriptionTier;
+    subscriptionTier!: SubscriptionTier;
+
+    @OneToMany(() => ApiBusinessUserEntity, (businessUser) => businessUser.business)
+    users!: ApiBusinessUserEntity[];
+
+    @OneToMany(() => ApiWebsiteEntity, (website) => website.business)
+    websites!: ApiWebsiteEntity[];
 }

@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { runnerPrisma } from 'bizpark.core';
+import { runnerPrisma, TaskStatus } from 'bizpark.core';
 
 @Processor('agent-queue')
 export class AgentProcessor extends WorkerHost {
@@ -17,7 +17,7 @@ export class AgentProcessor extends WorkerHost {
                 id: taskId,
                 businessId,
                 taskType,
-                status: 'PROCESSING',
+                status: TaskStatus.PROCESSING,
                 inputData: inputData || {},
             }
         });
@@ -28,7 +28,7 @@ export class AgentProcessor extends WorkerHost {
         // Update the task to completed
         await runnerPrisma.agentTask.update({
             where: { id: taskId },
-            data: { status: 'COMPLETED', outputData: { generatedContent: 'Genkit Mock Response' } }
+            data: { status: TaskStatus.COMPLETED, outputData: { generatedContent: 'Genkit Mock Response' } }
         });
 
         this.logger.log(`[AGENT SUCCESS] Task ${taskId}: Content generated! Saved to PostgreSQL AgentTask table.`);
