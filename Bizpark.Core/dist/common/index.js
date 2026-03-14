@@ -18,3 +18,4 @@ __exportStar(require("./dtos/create-agent-task.dto"), exports);
 __exportStar(require("./dtos/create-business.dto"), exports);
 __exportStar(require("./dtos/auth.dto"), exports);
 __exportStar(require("./dtos/save-website-config.dto"), exports);
+__exportStar(require("./json-types"), exports);

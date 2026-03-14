@@ -1,4 +1,4 @@
-import { TaskType, TaskStatus } from '@prisma/client';
+import { TaskType } from '../../typeorm/entities/shared/enums';
 
 export class CreateAgentTaskDto {
     businessId!: string;

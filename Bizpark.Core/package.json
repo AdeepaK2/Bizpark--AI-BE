@@ -6,6 +6,17 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "typeorm:app": "typeorm-ts-node-commonjs -d src/typeorm/datasources/application.datasource.ts",
+    "typeorm:admin": "typeorm-ts-node-commonjs -d src/typeorm/datasources/admin.datasource.ts",
+    "typeorm:runner": "typeorm-ts-node-commonjs -d src/typeorm/datasources/runner.datasource.ts",
+    "db:migrate:split-schemas": "node scripts/migrate-split-schemas.js",
+    "db:rollback:split-schemas": "node scripts/migrate-split-schemas-rollback.js",
+    "migration:run:app": "npm run typeorm:app -- migration:run",
+    "migration:run:admin": "npm run typeorm:admin -- migration:run",
+    "migration:run:runner": "npm run typeorm:runner -- migration:run",
+    "migration:revert:app": "npm run typeorm:app -- migration:revert",
+    "migration:revert:admin": "npm run typeorm:admin -- migration:revert",
+    "migration:revert:runner": "npm run typeorm:runner -- migration:revert",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,12 +26,13 @@
   "devDependencies": {
     "@types/node": "^25.3.5",
     "rimraf": "^6.1.3",
+    "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@prisma/client": "5.22.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "prisma": "5.22.0"
+    "pg": "^8.16.3",
+    "typeorm": "^0.3.24"
   }
 }
