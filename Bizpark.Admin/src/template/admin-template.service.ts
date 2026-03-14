@@ -203,6 +203,126 @@ export class AdminTemplateService {
           ],
         },
       },
+      {
+        name: 'Landing Nova One',
+        description: 'Polished single-page landing template with hero, highlights, testimonial, and final CTA.',
+        type: 'SHOWCASE',
+        baseHtmlUrl: undefined,
+        deployment: {
+          framework: 'NEXTJS',
+          repositoryUrl: '',
+          envRequirements: [],
+          baseHtml: `<section style="font-family:Inter,system-ui,sans-serif;max-width:1080px;margin:28px auto;padding:22px;">
+  <div style="border:1px solid #e2e8f0;border-radius:18px;padding:52px;background:linear-gradient(135deg,#f8fafc,#eef9ff);">
+    <span style="display:inline-block;background:#e0f2fe;color:#0369a1;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.06em;">{{hero.badge}}</span>
+    <h1 style="font-size:48px;line-height:1.1;letter-spacing:-.03em;margin:14px 0 14px;color:#0f172a;max-width:860px;">{{hero.title}}</h1>
+    <p style="font-size:18px;line-height:1.75;color:#334155;max-width:760px;margin:0 0 20px;">{{hero.subtitle}}</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <a href="#" style="text-decoration:none;background:{{theme.accentColor}};color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;">{{hero.ctaPrimary}}</a>
+      <a href="#" style="text-decoration:none;background:#fff;color:#0f172a;padding:12px 18px;border-radius:12px;border:1px solid #d1d5db;font-weight:700;">{{hero.ctaSecondary}}</a>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px;">
+    <article style="border:1px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff;">
+      <h3 style="margin:0 0 8px;color:#0f172a;">{{highlights.itemOneTitle}}</h3>
+      <p style="margin:0;color:#475569;line-height:1.6;">{{highlights.itemOneText}}</p>
+    </article>
+    <article style="border:1px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff;">
+      <h3 style="margin:0 0 8px;color:#0f172a;">{{highlights.itemTwoTitle}}</h3>
+      <p style="margin:0;color:#475569;line-height:1.6;">{{highlights.itemTwoText}}</p>
+    </article>
+    <article style="border:1px solid #e2e8f0;border-radius:14px;padding:18px;background:#fff;">
+      <h3 style="margin:0 0 8px;color:#0f172a;">{{highlights.itemThreeTitle}}</h3>
+      <p style="margin:0;color:#475569;line-height:1.6;">{{highlights.itemThreeText}}</p>
+    </article>
+  </div>
+  <blockquote style="margin:18px 0 0;border:1px solid #e2e8f0;border-radius:14px;padding:24px;background:#fff;">
+    <p style="margin:0 0 10px;color:#111827;font-size:20px;line-height:1.6;">"{{testimonial.quote}}"</p>
+    <footer style="color:#64748b;font-weight:600;">{{testimonial.author}}</footer>
+  </blockquote>
+  <div style="margin-top:18px;border-radius:16px;padding:26px;background:#0f172a;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+    <h2 style="margin:0;font-size:30px;line-height:1.2;max-width:700px;">{{finalCta.title}}</h2>
+    <a href="#" style="text-decoration:none;background:{{theme.accentColor}};color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;white-space:nowrap;">{{finalCta.buttonText}}</a>
+  </div>
+</section>`,
+          previewData: {
+            hero: {
+              badge: 'NEW',
+              title: 'Turn visitors into customers with one clean landing page',
+              subtitle: 'Fast-loading, conversion-focused layout you can personalize in minutes.',
+              ctaPrimary: 'Start Free',
+              ctaSecondary: 'Book Demo',
+            },
+            highlights: {
+              itemOneTitle: 'Lightning Fast',
+              itemOneText: 'Optimized performance and clean page structure.',
+              itemTwoTitle: 'Built to Convert',
+              itemTwoText: 'Simple sections crafted for signup and inquiry actions.',
+              itemThreeTitle: 'Easy to Edit',
+              itemThreeText: 'Update content without touching code.',
+            },
+            testimonial: {
+              quote: 'We launched in one week and doubled lead volume.',
+              author: 'A. Fernando, Founder',
+            },
+            theme: { accentColor: '#0ea5e9' },
+            finalCta: {
+              title: 'Ready to launch your page?',
+              buttonText: 'Get Started Today',
+            },
+          },
+        },
+        cmsSchema: {
+          sections: [
+            {
+              id: 'hero',
+              label: 'Hero',
+              fields: [
+                { key: 'badge', label: 'Badge', type: 'TEXT', defaultValue: 'NEW' },
+                { key: 'title', label: 'Title', type: 'TEXT', defaultValue: 'Turn visitors into customers with one clean landing page' },
+                { key: 'subtitle', label: 'Subtitle', type: 'TEXT', defaultValue: 'Fast-loading, conversion-focused layout you can personalize in minutes.' },
+                { key: 'ctaPrimary', label: 'Primary CTA', type: 'TEXT', defaultValue: 'Start Free' },
+                { key: 'ctaSecondary', label: 'Secondary CTA', type: 'TEXT', defaultValue: 'Book Demo' },
+              ],
+            },
+            {
+              id: 'highlights',
+              label: 'Highlights',
+              fields: [
+                { key: 'itemOneTitle', label: 'Highlight 1 Title', type: 'TEXT', defaultValue: 'Lightning Fast' },
+                { key: 'itemOneText', label: 'Highlight 1 Text', type: 'TEXT', defaultValue: 'Optimized performance and clean page structure.' },
+                { key: 'itemTwoTitle', label: 'Highlight 2 Title', type: 'TEXT', defaultValue: 'Built to Convert' },
+                { key: 'itemTwoText', label: 'Highlight 2 Text', type: 'TEXT', defaultValue: 'Simple sections crafted for signup and inquiry actions.' },
+                { key: 'itemThreeTitle', label: 'Highlight 3 Title', type: 'TEXT', defaultValue: 'Easy to Edit' },
+                { key: 'itemThreeText', label: 'Highlight 3 Text', type: 'TEXT', defaultValue: 'Update content without touching code.' },
+              ],
+            },
+            {
+              id: 'testimonial',
+              label: 'Testimonial',
+              fields: [
+                { key: 'quote', label: 'Quote', type: 'TEXT', defaultValue: 'We launched in one week and doubled lead volume.' },
+                { key: 'author', label: 'Author', type: 'TEXT', defaultValue: 'A. Fernando, Founder' },
+              ],
+            },
+            {
+              id: 'theme',
+              label: 'Theme',
+              fields: [
+                { key: 'accentColor', label: 'Accent Color', type: 'COLOR', defaultValue: '#0ea5e9' },
+              ],
+            },
+            {
+              id: 'finalCta',
+              label: 'Final CTA',
+              fields: [
+                { key: 'title', label: 'CTA Title', type: 'TEXT', defaultValue: 'Ready to launch your page?' },
+                { key: 'buttonText', label: 'CTA Button Text', type: 'TEXT', defaultValue: 'Get Started Today' },
+              ],
+            },
+          ],
+        },
+      },
     ];
 
     const names = starters.map((s) => s.name);
