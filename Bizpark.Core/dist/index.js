@@ -18,6 +18,7 @@ exports.prisma = exports.runnerPrisma = exports.adminPrisma = exports.applicatio
 const client_1 = require("@prisma/client");
 __exportStar(require("@prisma/client"), exports);
 __exportStar(require("./common"), exports);
+__exportStar(require("./typeorm"), exports);
 const globalForPrisma = global;
 const createPrismaClient = (urlEnvVar) => {
     const url = process.env[urlEnvVar] || process.env.DATABASE_URL;
