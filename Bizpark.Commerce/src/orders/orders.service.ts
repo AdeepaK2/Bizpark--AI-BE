@@ -1,41 +1,37 @@
-import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { OrderEntity, OrderItemEntity } from '../db/entities';
 
-type OrderItem = {
-  productId: string;
-  quantity: number;
-};
-
-type Order = {
-  id: string;
-  tenantId: string;
-  customerId: string;
-  status: 'PENDING' | 'PAID' | 'FULFILLED' | 'CANCELLED';
-  items: OrderItem[];
-  createdAt: string;
-};
+type OrderItemInput = { productId: string; quantity: number };
 
 @Injectable()
 export class OrdersService {
-  private readonly ordersByTenant = new Map<string, Order[]>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  list(tenantId: string) {
-    return this.ordersByTenant.get(tenantId) || [];
+  async list(tenantId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  create(tenantId: string, payload: { customerId: string; items: OrderItem[] }) {
-    const order: Order = {
-      id: randomUUID(),
-      tenantId,
-      customerId: payload.customerId,
-      status: 'PENDING',
-      items: payload.items,
-      createdAt: new Date().toISOString(),
-    };
+  async create(tenantId: string, payload: { customerId: string; items: OrderItemInput[] }) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const orderRepo = ds.getRepository(OrderEntity);
+    const itemRepo = ds.getRepository(OrderItemEntity);
 
-    const existing = this.ordersByTenant.get(tenantId) || [];
-    this.ordersByTenant.set(tenantId, [order, ...existing]);
+    const order = await orderRepo.save(
+      orderRepo.create({ customerId: payload.customerId, status: 'PENDING', items: [] }),
+    );
 
-    return order;
+    const items = payload.items.map((i) =>
+      itemRepo.create({ productId: i.productId, quantity: i.quantity, order }),
+    );
+    await itemRepo.save(items);
+
+    return orderRepo.findOne({ where: { id: order.id } });
+  }
+
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(OrderEntity);
   }
 }

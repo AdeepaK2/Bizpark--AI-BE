@@ -1,34 +1,27 @@
-import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
-
-type Customer = {
-  id: string;
-  tenantId: string;
-  email: string;
-  name?: string;
-  createdAt: string;
-};
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { CustomerEntity } from '../db/entities';
 
 @Injectable()
 export class CustomersService {
-  private readonly customersByTenant = new Map<string, Customer[]>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  list(tenantId: string) {
-    return this.customersByTenant.get(tenantId) || [];
+  async list(tenantId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  create(tenantId: string, payload: { email: string; name?: string }) {
-    const customer: Customer = {
-      id: randomUUID(),
-      tenantId,
+  async create(tenantId: string, payload: { email: string; name?: string }) {
+    const repo = await this.repo(tenantId);
+    const customer = repo.create({
       email: payload.email.trim().toLowerCase(),
-      name: payload.name,
-      createdAt: new Date().toISOString(),
-    };
+      name: payload.name ?? null,
+    });
+    return repo.save(customer);
+  }
 
-    const existing = this.customersByTenant.get(tenantId) || [];
-    this.customersByTenant.set(tenantId, [customer, ...existing]);
-
-    return customer;
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(CustomerEntity);
   }
 }

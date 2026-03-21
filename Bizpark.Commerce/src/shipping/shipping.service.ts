@@ -1,71 +1,53 @@
-import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
-
-type ShippingMethod = {
-  id: string;
-  tenantId: string;
-  code: string;
-  label: string;
-  flatRate: number;
-  currency: string;
-  active: boolean;
-};
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { ShippingMethodEntity } from '../db/entities';
 
 @Injectable()
 export class ShippingService {
-  private readonly methodsByTenant = new Map<string, ShippingMethod[]>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  listMethods(tenantId: string) {
-    return this.methodsByTenant.get(tenantId) || [];
+  async listMethods(tenantId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  createMethod(
+  async createMethod(
     tenantId: string,
     payload: { code: string; label: string; flatRate: number; currency?: string; active?: boolean },
   ) {
-    const method: ShippingMethod = {
-      id: randomUUID(),
-      tenantId,
+    const repo = await this.repo(tenantId);
+    const method = repo.create({
       code: payload.code,
       label: payload.label,
       flatRate: Number(payload.flatRate || 0),
       currency: payload.currency || 'USD',
       active: payload.active ?? true,
-    };
-
-    const existing = this.methodsByTenant.get(tenantId) || [];
-    this.methodsByTenant.set(tenantId, [method, ...existing]);
-
-    return method;
+    });
+    return repo.save(method);
   }
 
-  quote(
+  async quote(
     tenantId: string,
     payload: { methodCode: string; weightKg?: number; orderSubtotal?: number },
   ) {
-    const methods = this.methodsByTenant.get(tenantId) || [];
-    const method = methods.find((item) => item.code === payload.methodCode && item.active);
+    const repo = await this.repo(tenantId);
+    const method = await repo.findOne({ where: { code: payload.methodCode, active: true } });
 
-    if (!method) {
-      return {
-        success: false,
-        message: 'Shipping method not found',
-      };
-    }
+    if (!method) return { success: false, message: 'Shipping method not found' };
 
     const weightFee = Math.max(0, Number(payload.weightKg || 0)) * 0.5;
     const subtotal = Math.max(0, Number(payload.orderSubtotal || 0));
     const discounted = subtotal >= 100 ? 5 : 0;
-    const amount = Math.max(0, method.flatRate + weightFee - discounted);
+    const amount = Math.max(0, Number(method.flatRate) + weightFee - discounted);
 
     return {
       success: true,
-      data: {
-        methodCode: method.code,
-        label: method.label,
-        amount,
-        currency: method.currency,
-      },
+      data: { methodCode: method.code, label: method.label, amount, currency: method.currency },
     };
+  }
+
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(ShippingMethodEntity);
   }
 }

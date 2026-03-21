@@ -1,77 +1,60 @@
-import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
-
-type InventoryItem = {
-  id: string;
-  tenantId: string;
-  productId: string;
-  sku: string;
-  availableQuantity: number;
-  reservedQuantity: number;
-  updatedAt: string;
-};
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { InventoryItemEntity } from '../db/entities';
 
 @Injectable()
 export class InventoryService {
-  private readonly itemsByTenant = new Map<string, InventoryItem[]>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  list(tenantId: string) {
-    return this.itemsByTenant.get(tenantId) || [];
+  async list(tenantId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  upsert(
+  async upsert(
     tenantId: string,
     payload: { productId: string; sku: string; availableQuantity: number; reservedQuantity?: number },
   ) {
-    const items = this.itemsByTenant.get(tenantId) || [];
-    const existing = items.find((item) => item.sku === payload.sku);
+    const repo = await this.repo(tenantId);
+    const existing = await repo.findOne({ where: { sku: payload.sku } });
 
     if (existing) {
       existing.productId = payload.productId;
       existing.availableQuantity = Math.max(0, Number(payload.availableQuantity || 0));
-      existing.reservedQuantity = Math.max(0, Number(payload.reservedQuantity || existing.reservedQuantity || 0));
-      existing.updatedAt = new Date().toISOString();
-      return existing;
+      if (payload.reservedQuantity !== undefined) {
+        existing.reservedQuantity = Math.max(0, Number(payload.reservedQuantity));
+      }
+      return repo.save(existing);
     }
 
-    const created: InventoryItem = {
-      id: randomUUID(),
-      tenantId,
+    const created = repo.create({
       productId: payload.productId,
       sku: payload.sku,
       availableQuantity: Math.max(0, Number(payload.availableQuantity || 0)),
       reservedQuantity: Math.max(0, Number(payload.reservedQuantity || 0)),
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.itemsByTenant.set(tenantId, [created, ...items]);
-    return created;
+    });
+    return repo.save(created);
   }
 
-  reserve(tenantId: string, payload: { sku: string; quantity: number }) {
-    const items = this.itemsByTenant.get(tenantId) || [];
-    const item = items.find((candidate) => candidate.sku === payload.sku);
+  async reserve(tenantId: string, payload: { sku: string; quantity: number }) {
+    const repo = await this.repo(tenantId);
+    const item = await repo.findOne({ where: { sku: payload.sku } });
 
-    if (!item) {
-      return { success: false, message: 'Inventory SKU not found' };
-    }
+    if (!item) return { success: false, message: 'Inventory SKU not found' };
 
     const quantity = Math.max(1, Number(payload.quantity || 1));
     if (item.availableQuantity < quantity) {
-      return {
-        success: false,
-        message: 'Insufficient inventory',
-        data: item,
-      };
+      return { success: false, message: 'Insufficient inventory', data: item };
     }
 
     item.availableQuantity -= quantity;
     item.reservedQuantity += quantity;
-    item.updatedAt = new Date().toISOString();
+    const saved = await repo.save(item);
+    return { success: true, data: saved };
+  }
 
-    return {
-      success: true,
-      data: item,
-    };
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(InventoryItemEntity);
   }
 }

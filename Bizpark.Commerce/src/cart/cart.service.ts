@@ -1,76 +1,75 @@
-import { randomUUID } from 'crypto';
 import { Injectable } from '@nestjs/common';
-
-type CartItem = {
-  productId: string;
-  quantity: number;
-};
-
-type Cart = {
-  id: string;
-  tenantId: string;
-  customerId: string;
-  items: CartItem[];
-  updatedAt: string;
-};
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { CartEntity, CartItemEntity } from '../db/entities';
 
 @Injectable()
 export class CartService {
-  private readonly cartsByTenant = new Map<string, Map<string, Cart>>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  getCart(tenantId: string, customerId: string): Cart {
-    const tenantCarts = this.ensureTenantCarts(tenantId);
-    let cart = tenantCarts.get(customerId);
-
+  async getCart(tenantId: string, customerId: string): Promise<CartEntity> {
+    const repo = await this.repo(tenantId);
+    let cart = await repo.findOne({ where: { customerId } });
     if (!cart) {
-      cart = {
-        id: randomUUID(),
-        tenantId,
-        customerId,
-        items: [],
-        updatedAt: new Date().toISOString(),
-      };
-      tenantCarts.set(customerId, cart);
+      cart = await repo.save(repo.create({ customerId, items: [] }));
     }
-
     return cart;
   }
 
-  addItem(tenantId: string, customerId: string, payload: { productId: string; quantity: number }) {
-    const cart = this.getCart(tenantId, customerId);
-    const quantity = Math.max(1, Number(payload.quantity || 1));
+  async addItem(
+    tenantId: string,
+    customerId: string,
+    payload: { productId: string; quantity: number },
+  ) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const cartRepo = ds.getRepository(CartEntity);
+    const itemRepo = ds.getRepository(CartItemEntity);
 
-    const existing = cart.items.find((item) => item.productId === payload.productId);
+    let cart = await cartRepo.findOne({ where: { customerId } });
+    if (!cart) {
+      cart = await cartRepo.save(cartRepo.create({ customerId, items: [] }));
+    }
+
+    const quantity = Math.max(1, Number(payload.quantity || 1));
+    const existing = cart.items.find((i) => i.productId === payload.productId);
+
     if (existing) {
       existing.quantity += quantity;
+      await itemRepo.save(existing);
     } else {
-      cart.items.push({ productId: payload.productId, quantity });
+      await itemRepo.save(itemRepo.create({ productId: payload.productId, quantity, cart }));
     }
 
-    cart.updatedAt = new Date().toISOString();
-    return cart;
+    return cartRepo.findOne({ where: { customerId } });
   }
 
-  removeItem(tenantId: string, customerId: string, productId: string) {
-    const cart = this.getCart(tenantId, customerId);
-    cart.items = cart.items.filter((item) => item.productId !== productId);
-    cart.updatedAt = new Date().toISOString();
-    return cart;
+  async removeItem(tenantId: string, customerId: string, productId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const cartRepo = ds.getRepository(CartEntity);
+    const itemRepo = ds.getRepository(CartItemEntity);
+
+    const cart = await cartRepo.findOne({ where: { customerId } });
+    if (!cart) return null;
+
+    const item = cart.items.find((i) => i.productId === productId);
+    if (item) await itemRepo.remove(item);
+
+    return cartRepo.findOne({ where: { customerId } });
   }
 
-  clearCart(tenantId: string, customerId: string) {
-    const cart = this.getCart(tenantId, customerId);
-    cart.items = [];
-    cart.updatedAt = new Date().toISOString();
-    return cart;
-  }
+  async clearCart(tenantId: string, customerId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const cartRepo = ds.getRepository(CartEntity);
+    const itemRepo = ds.getRepository(CartItemEntity);
 
-  private ensureTenantCarts(tenantId: string) {
-    let carts = this.cartsByTenant.get(tenantId);
-    if (!carts) {
-      carts = new Map<string, Cart>();
-      this.cartsByTenant.set(tenantId, carts);
+    const cart = await cartRepo.findOne({ where: { customerId } });
+    if (cart && cart.items.length > 0) {
+      await itemRepo.remove(cart.items);
     }
-    return carts;
+    return cart;
+  }
+
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(CartEntity);
   }
 }
