@@ -258,6 +258,12 @@ PROD3_ID=$(echo "$P3" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 R=$(curl -s "$BASE/api/commerce/catalog/products?categoryId=$CAT2_ID" -H "x-tenant-id: $TENANT")
 check "Filter products by categoryId returns results" '"Blue T-Shirt"' "$R"
 
+# Product search
+R=$(curl -s "$BASE/api/commerce/catalog/products?search=T-Shirt" -H "x-tenant-id: $TENANT")
+check "Search by title keyword returns match" '"Blue T-Shirt"' "$R"
+R=$(curl -s "$BASE/api/commerce/catalog/products?search=zzznomatch_xyz" -H "x-tenant-id: $TENANT")
+check "Search with no match returns empty data" '"data":[]' "$R"
+
 R=$(curl -s "$BASE/api/commerce/catalog/products/$PROD1_ID" -H "x-tenant-id: $TENANT")
 check "GET /catalog/products/:id returns product" '"title":"Blue T-Shirt"' "$R"
 
@@ -449,6 +455,16 @@ R=$(curl -s -X POST "$BASE/api/commerce/cart/$CUST1_ID/items" \
   -d "{\"productId\":\"$PROD1_ID\",\"variantId\":\"$V1_ID\",\"quantity\":1}")
 check "Add T-Shirt variant (Red/Small) to cart" '"success":true' "$R"
 check "Variant item has variant title snapshot" '"Red / Small"' "$R"
+
+# Get the T-Shirt (no variant) item ID to update its quantity
+TSHIRT_ITEM_ID=$(curl -s "$BASE/api/commerce/cart/$CUST1_ID" \
+  -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN" \
+  | grep -o '"id":"[^"]*","productId":"'"$PROD1_ID"'"' | head -1 | grep -o '"id":"[^"]*"' | cut -d'"' -f4)
+R=$(curl -s -X PATCH "$BASE/api/commerce/cart/$CUST1_ID/items/$TSHIRT_ITEM_ID" \
+  -H "Content-Type: application/json" -H "x-tenant-id: $TENANT" \
+  -H "Authorization: Bearer $CUST1_TOKEN" \
+  -d '{"quantity":5}')
+check "PATCH cart item updates quantity to 5" '"quantity":5' "$R"
 
 R=$(curl -s -X POST "$BASE/api/commerce/cart/$CUST1_ID/items" \
   -H "Content-Type: application/json" -H "x-tenant-id: $TENANT" \
