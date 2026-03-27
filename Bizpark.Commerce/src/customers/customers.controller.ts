@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -13,12 +13,26 @@ export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  list(@TenantId() tenantId: string) {
-    return { success: true, data: this.customersService.list(tenantId) };
+  async list(@TenantId() tenantId: string) {
+    return { success: true, data: await this.customersService.list(tenantId) };
+  }
+
+  @Get(':id')
+  async getOne(@TenantId() tenantId: string, @Param('id') id: string) {
+    return { success: true, data: await this.customersService.getById(tenantId, id) };
   }
 
   @Post()
-  create(@TenantId() tenantId: string, @Body() dto: { email: string; name?: string }) {
-    return { success: true, data: this.customersService.create(tenantId, dto) };
+  async create(@TenantId() tenantId: string, @Body() dto: { email: string; name?: string }) {
+    return { success: true, data: await this.customersService.create(tenantId, dto) };
+  }
+
+  @Patch(':id')
+  async update(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+    @Body() dto: { email?: string; name?: string },
+  ) {
+    return { success: true, data: await this.customersService.update(tenantId, id, dto) };
   }
 }

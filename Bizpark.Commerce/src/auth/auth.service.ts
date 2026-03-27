@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
@@ -44,6 +44,32 @@ export class AuthService {
       access_token: this.jwtService.sign({ sub: user.id, tenantId, email: user.email, role: user.role }),
       user: { id: user.id, tenantId, email: user.email, name: user.name, role: user.role },
     };
+  }
+
+  async bootstrapAdmin(tenantId: string, email: string, password: string, name: string) {
+    const repo = await this.repo(tenantId);
+    const existingAdmin = await repo.findOne({ where: { role: 'ADMIN' } });
+    if (existingAdmin) throw new ConflictException('An admin already exists for this tenant');
+    return this.register(tenantId, email, password, name, 'ADMIN');
+  }
+
+  async updateProfile(tenantId: string, userId: string, payload: { name?: string; currentPassword?: string; newPassword?: string }) {
+    const repo = await this.repo(tenantId);
+    const user = await repo.findOne({ where: { id: userId } });
+    if (!user) throw new ForbiddenException('User not found');
+
+    if (payload.newPassword) {
+      if (!payload.currentPassword) throw new BadRequestException('currentPassword is required to set a new password');
+      const isMatch = await bcrypt.compare(payload.currentPassword, user.passwordHash);
+      if (!isMatch) throw new UnauthorizedException('Current password is incorrect');
+      user.passwordHash = await bcrypt.hash(payload.newPassword, 10);
+    }
+
+    if (payload.name) user.name = payload.name.trim();
+
+    const saved = await repo.save(user);
+    const { passwordHash: _ph, ...safeUser } = saved;
+    return { ...safeUser, tenantId };
   }
 
   async findById(tenantId: string, userId: string) {

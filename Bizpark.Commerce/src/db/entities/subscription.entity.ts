@@ -16,8 +16,20 @@ export class SubscriptionEntity {
   @Column({ type: 'varchar', length: 20, default: 'ACTIVE' })
   status!: SubscriptionStatus;
 
+  // e.g. 'monthly', 'yearly', 'weekly'
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  billingInterval!: string | null;
+
   @Column({ type: 'timestamptz' })
   startedAt!: Date;
+
+  // When the current billing period ends / subscription expires
+  @Column({ type: 'timestamptz', nullable: true })
+  expiresAt!: Date | null;
+
+  // Next scheduled renewal date
+  @Column({ type: 'timestamptz', nullable: true })
+  renewsAt!: Date | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;

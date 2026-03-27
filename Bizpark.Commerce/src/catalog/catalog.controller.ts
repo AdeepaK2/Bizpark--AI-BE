@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -9,20 +9,61 @@ import { CatalogService } from './catalog.service';
 export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
 
-  // Public — anyone can browse products
+  // Public — browse products with optional category filter + pagination
   @Get('products')
-  listProducts(@TenantId() tenantId: string) {
-    return { success: true, data: this.catalogService.listProducts(tenantId) };
+  async listProducts(
+    @TenantId() tenantId: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return {
+      success: true,
+      ...(await this.catalogService.listProducts(tenantId, {
+        categoryId,
+        search: search?.trim() || undefined,
+        page: parseInt(page, 10) || 1,
+        limit: parseInt(limit, 10) || 20,
+      })),
+    };
   }
 
-  // ADMIN only — create/manage products
+  // Public — product detail
+  @Get('products/:id')
+  async getProduct(@TenantId() tenantId: string, @Param('id') id: string) {
+    return { success: true, data: await this.catalogService.getProduct(tenantId, id) };
+  }
+
+  // ADMIN only — create product
   @Post('products')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  createProduct(
+  async createProduct(
     @TenantId() tenantId: string,
-    @Body() dto: { title: string; description?: string; price: number; currency?: string },
+    @Body() dto: { title: string; description?: string; price: number; currency?: string; categoryId?: string },
   ) {
-    return { success: true, data: this.catalogService.createProduct(tenantId, dto) };
+    return { success: true, data: await this.catalogService.createProduct(tenantId, dto) };
+  }
+
+  // ADMIN only — update product
+  @Patch('products/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async updateProduct(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+    @Body() dto: { title?: string; description?: string; price?: number; currency?: string; categoryId?: string | null },
+  ) {
+    return { success: true, data: await this.catalogService.updateProduct(tenantId, id, dto) };
+  }
+
+  // ADMIN only — soft delete product
+  @Delete('products/:id')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  async deleteProduct(@TenantId() tenantId: string, @Param('id') id: string) {
+    return { success: true, data: await this.catalogService.deleteProduct(tenantId, id) };
   }
 }
