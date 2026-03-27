@@ -161,6 +161,47 @@ export class OrdersService {
     }
   }
 
+  /** Customer-initiated cancel — only PENDING orders, releases inventory. */
+  async cancelByCustomer(tenantId: string, orderId: string, customerId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const repo = ds.getRepository(OrderEntity);
+    const queryRunner = ds.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const order = await queryRunner.manager
+        .createQueryBuilder(OrderEntity, 'o')
+        .setLock('pessimistic_write')
+        .where('o.id = :id', { id: orderId })
+        .getOne();
+      if (!order) throw new NotFoundException('Order not found');
+      if (order.customerId !== customerId) throw new NotFoundException('Order not found');
+      if (order.status !== 'PENDING') {
+        throw new BadRequestException(`Only PENDING orders can be cancelled. Current status: ${order.status}`);
+      }
+
+      // Release reserved inventory
+      const orderWithItems = await queryRunner.manager.findOne(OrderEntity, { where: { id: orderId } });
+      if (orderWithItems?.items?.length) {
+        for (const item of orderWithItems.items) {
+          await this.inventoryService.releaseWithLock(queryRunner.manager, item.productId, item.quantity, item.variantId);
+        }
+      }
+
+      order.status = 'CANCELLED';
+      await queryRunner.manager.save(OrderEntity, order);
+      await queryRunner.commitTransaction();
+
+      return repo.findOne({ where: { id: orderId } });
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   private async repo(tenantId: string) {
     const ds = await this.tenantDb.getDataSource(tenantId);
     return ds.getRepository(OrderEntity);
