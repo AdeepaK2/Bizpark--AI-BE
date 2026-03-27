@@ -11,6 +11,12 @@ import { CurrentUser } from './current-user.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // Bootstrap — creates the first ADMIN for a tenant; 409 if admin already exists
+  @Post('bootstrap')
+  bootstrap(@TenantId() tenantId: string, @Body() dto: CommerceAdminRegisterDto) {
+    return this.authService.bootstrapAdmin(tenantId, dto.email, dto.password, dto.name);
+  }
+
   // Public — register as CUSTOMER
   @Post('register')
   register(@TenantId() tenantId: string, @Body() dto: CommerceRegisterDto) {

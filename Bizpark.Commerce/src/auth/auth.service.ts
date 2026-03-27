@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
@@ -44,6 +44,13 @@ export class AuthService {
       access_token: this.jwtService.sign({ sub: user.id, tenantId, email: user.email, role: user.role }),
       user: { id: user.id, tenantId, email: user.email, name: user.name, role: user.role },
     };
+  }
+
+  async bootstrapAdmin(tenantId: string, email: string, password: string, name: string) {
+    const repo = await this.repo(tenantId);
+    const existingAdmin = await repo.findOne({ where: { role: 'ADMIN' } });
+    if (existingAdmin) throw new ConflictException('An admin already exists for this tenant');
+    return this.register(tenantId, email, password, name, 'ADMIN');
   }
 
   async findById(tenantId: string, userId: string) {

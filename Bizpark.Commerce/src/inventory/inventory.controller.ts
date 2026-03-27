@@ -13,16 +13,16 @@ export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Get()
-  list(@TenantId() tenantId: string) {
-    return { success: true, data: this.inventoryService.list(tenantId) };
+  async list(@TenantId() tenantId: string) {
+    return { success: true, data: await this.inventoryService.list(tenantId) };
   }
 
   @Post('upsert')
-  upsert(
+  async upsert(
     @TenantId() tenantId: string,
     @Body() dto: { productId: string; sku: string; availableQuantity: number; reservedQuantity?: number },
   ) {
-    return { success: true, data: this.inventoryService.upsert(tenantId, dto) };
+    return { success: true, data: await this.inventoryService.upsert(tenantId, dto) };
   }
 
   @Post('reserve')

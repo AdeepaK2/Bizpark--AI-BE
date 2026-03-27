@@ -14,16 +14,16 @@ export class OrdersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
-  list(@TenantId() tenantId: string) {
-    return { success: true, data: this.ordersService.list(tenantId) };
+  async list(@TenantId() tenantId: string) {
+    return { success: true, data: await this.ordersService.list(tenantId) };
   }
 
-  // CUSTOMER — place an order
+  // JWT required — any authenticated user can place an order
   @Post()
-  create(
+  async create(
     @TenantId() tenantId: string,
     @Body() dto: { customerId: string; items: Array<{ productId: string; quantity: number }> },
   ) {
-    return { success: true, data: this.ordersService.create(tenantId, dto) };
+    return { success: true, data: await this.ordersService.create(tenantId, dto) };
   }
 }

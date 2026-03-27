@@ -11,18 +11,18 @@ export class CatalogController {
 
   // Public — anyone can browse products
   @Get('products')
-  listProducts(@TenantId() tenantId: string) {
-    return { success: true, data: this.catalogService.listProducts(tenantId) };
+  async listProducts(@TenantId() tenantId: string) {
+    return { success: true, data: await this.catalogService.listProducts(tenantId) };
   }
 
   // ADMIN only — create/manage products
   @Post('products')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  createProduct(
+  async createProduct(
     @TenantId() tenantId: string,
     @Body() dto: { title: string; description?: string; price: number; currency?: string },
   ) {
-    return { success: true, data: this.catalogService.createProduct(tenantId, dto) };
+    return { success: true, data: await this.catalogService.createProduct(tenantId, dto) };
   }
 }

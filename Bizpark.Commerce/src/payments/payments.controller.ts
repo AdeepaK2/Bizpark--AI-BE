@@ -13,10 +13,7 @@ export class PaymentsController {
     @TenantId() tenantId: string,
     @Body() dto: { customerId: string; amount: number; currency?: string },
   ) {
-    return {
-      success: true,
-      data: this.paymentsService.createPaymentIntent(tenantId, dto),
-    };
+    return { success: true, data: this.paymentsService.createPaymentIntent(tenantId, dto) };
   }
 
   @Post('webhook')

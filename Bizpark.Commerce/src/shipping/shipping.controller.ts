@@ -11,19 +11,19 @@ export class ShippingController {
 
   // Public — list available shipping methods
   @Get('methods')
-  listMethods(@TenantId() tenantId: string) {
-    return { success: true, data: this.shippingService.listMethods(tenantId) };
+  async listMethods(@TenantId() tenantId: string) {
+    return { success: true, data: await this.shippingService.listMethods(tenantId) };
   }
 
   // ADMIN only — create shipping methods
   @Post('methods')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  createMethod(
+  async createMethod(
     @TenantId() tenantId: string,
     @Body() dto: { code: string; label: string; flatRate: number; currency?: string; active?: boolean },
   ) {
-    return { success: true, data: this.shippingService.createMethod(tenantId, dto) };
+    return { success: true, data: await this.shippingService.createMethod(tenantId, dto) };
   }
 
   // Public — get shipping quote

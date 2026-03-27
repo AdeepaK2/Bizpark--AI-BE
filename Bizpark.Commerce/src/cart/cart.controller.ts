@@ -9,34 +9,25 @@ export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get(':customerId')
-  getCart(@TenantId() tenantId: string, @Param('customerId') customerId: string) {
-    return {
-      success: true,
-      data: this.cartService.getCart(tenantId, customerId),
-    };
+  async getCart(@TenantId() tenantId: string, @Param('customerId') customerId: string) {
+    return { success: true, data: await this.cartService.getCart(tenantId, customerId) };
   }
 
   @Post(':customerId/items')
-  addItem(
+  async addItem(
     @TenantId() tenantId: string,
     @Param('customerId') customerId: string,
     @Body() dto: { productId: string; quantity: number },
   ) {
-    return {
-      success: true,
-      data: this.cartService.addItem(tenantId, customerId, dto),
-    };
+    return { success: true, data: await this.cartService.addItem(tenantId, customerId, dto) };
   }
 
   @Delete(':customerId/items/:productId')
-  removeItem(
+  async removeItem(
     @TenantId() tenantId: string,
     @Param('customerId') customerId: string,
     @Param('productId') productId: string,
   ) {
-    return {
-      success: true,
-      data: this.cartService.removeItem(tenantId, customerId, productId),
-    };
+    return { success: true, data: await this.cartService.removeItem(tenantId, customerId, productId) };
   }
 }
