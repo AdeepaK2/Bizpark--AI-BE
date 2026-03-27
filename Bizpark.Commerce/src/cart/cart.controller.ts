@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { CartService } from './cart.service';
-import { AddCartItemDto } from './dtos';
+import { AddCartItemDto, UpdateCartItemDto } from './dtos';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
@@ -37,6 +37,19 @@ export class CartController {
   ) {
     assertCartAccess(user, customerId);
     return { success: true, data: await this.cartService.addItem(tenantId, customerId, dto) };
+  }
+
+  // Update quantity of a specific cart item
+  @Patch(':customerId/items/:itemId')
+  async updateItem(
+    @TenantId() tenantId: string,
+    @Param('customerId') customerId: string,
+    @Param('itemId') itemId: string,
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpdateCartItemDto,
+  ) {
+    assertCartAccess(user, customerId);
+    return { success: true, data: await this.cartService.updateItemQuantity(tenantId, customerId, itemId, dto.quantity) };
   }
 
   // Remove by cart item ID (supports multiple variants of same product)
