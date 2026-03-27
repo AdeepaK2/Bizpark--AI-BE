@@ -1,10 +1,17 @@
 import { PaymentsService } from './payments.service';
+import { OrdersService } from '../orders/orders.service';
+
+function makeOrdersService(): OrdersService {
+  return {
+    updateStatus: jest.fn().mockResolvedValue({}),
+  } as unknown as OrdersService;
+}
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
 
   beforeEach(() => {
-    service = new PaymentsService();
+    service = new PaymentsService(makeOrdersService());
   });
 
   describe('createPaymentIntent', () => {
@@ -36,12 +43,23 @@ describe('PaymentsService', () => {
   });
 
   describe('processWebhook', () => {
-    it('returns accepted with event echoed back', () => {
+    it('returns accepted with event echoed back', async () => {
       const event = { type: 'payment.succeeded', data: { id: 'pi_1' } };
-      const result = service.processWebhook(event);
+      const result = await service.processWebhook('tenant1', event);
       expect(result.accepted).toBe(true);
       expect(result.event).toEqual(event);
       expect(result.receivedAt).toBeDefined();
+    });
+
+    it('updates order to PAID on payment_intent.succeeded', async () => {
+      const ordersService = makeOrdersService();
+      service = new PaymentsService(ordersService);
+      const event = {
+        type: 'payment_intent.succeeded',
+        data: { object: { metadata: { orderId: 'ord-123' } } },
+      };
+      await service.processWebhook('tenant1', event);
+      expect(ordersService.updateStatus).toHaveBeenCalledWith('tenant1', 'ord-123', 'PAID');
     });
   });
 });

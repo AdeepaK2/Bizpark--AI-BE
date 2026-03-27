@@ -1,5 +1,6 @@
 import { OrdersService } from './orders.service';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { InventoryService } from '../inventory/inventory.service';
 
 function makeFactory(orderRepo: any, itemRepo: any): TenantDataSourceFactory {
   return {
@@ -12,13 +13,20 @@ function makeFactory(orderRepo: any, itemRepo: any): TenantDataSourceFactory {
   } as unknown as TenantDataSourceFactory;
 }
 
+function makeInventoryService(): InventoryService {
+  return {
+    releaseByProductId: jest.fn().mockResolvedValue(undefined),
+    reserveByProductId: jest.fn().mockResolvedValue({ success: true }),
+  } as unknown as InventoryService;
+}
+
 describe('OrdersService', () => {
   const mockOrder = { id: 'ord1', customerId: 'cust1', status: 'PENDING', items: [] };
 
   describe('list', () => {
     it('returns all orders sorted by createdAt DESC', async () => {
       const orderRepo = { find: jest.fn().mockResolvedValue([mockOrder]) };
-      const service = new OrdersService(makeFactory(orderRepo, {}));
+      const service = new OrdersService(makeFactory(orderRepo, {}), makeInventoryService());
 
       const result = await service.list('tenant1');
       expect(result).toEqual([mockOrder]);
@@ -38,7 +46,7 @@ describe('OrdersService', () => {
         create: jest.fn((d) => d),
         save: jest.fn().mockResolvedValue([]),
       };
-      const service = new OrdersService(makeFactory(orderRepo, itemRepo));
+      const service = new OrdersService(makeFactory(orderRepo, itemRepo), makeInventoryService());
 
       const result = await service.create('tenant1', {
         customerId: 'cust1',
@@ -59,7 +67,7 @@ describe('OrdersService', () => {
         create: jest.fn((d) => d),
         save: jest.fn().mockResolvedValue([]),
       };
-      const service = new OrdersService(makeFactory(orderRepo, itemRepo));
+      const service = new OrdersService(makeFactory(orderRepo, itemRepo), makeInventoryService());
 
       await service.create('tenant1', {
         customerId: 'cust1',
