@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bizpark.Commerce — Test Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; }
+  header { background: linear-gradient(135deg, #1e293b, #0f172a); border-bottom: 1px solid #334155; padding: 24px 40px; }
+  header h1 { font-size: 1.5rem; font-weight: 700; color: #f1f5f9; }
+  header p { color: #94a3b8; font-size: 0.875rem; margin-top: 4px; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+  .summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+  .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px; text-align: center; }
+  .card .value { font-size: 2.25rem; font-weight: 800; line-height: 1; }
+  .card .label { font-size: 0.8rem; color: #94a3b8; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .green { color: #4ade80; } .blue { color: #60a5fa; } .yellow { color: #fbbf24; } .purple { color: #a78bfa; } .red { color: #f87171; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 1rem; font-weight: 600; color: #f1f5f9; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 0.7rem; background: #334155; color: #94a3b8; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+  .badge.pass { background: #14532d; color: #4ade80; } .badge.fail { background: #450a0a; color: #f87171; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+  thead tr { background: #0f172a; }
+  th { text-align: left; padding: 10px 16px; font-size: 0.75rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 10px 16px; font-size: 0.85rem; border-top: 1px solid #0f172a; }
+  tbody tr { background: #1e293b; } tbody tr:nth-child(even) { background: #172033; } tbody tr:hover { background: #253349; }
+  .bar-wrap { background: #0f172a; border-radius: 99px; height: 8px; width: 100px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 8px; }
+  .bar { height: 100%; border-radius: 99px; }
+  .bar.high { background: #4ade80; } .bar.medium { background: #fbbf24; } .bar.low { background: #f87171; }
+  .pct { font-size: 0.8rem; font-weight: 600; display: inline-block; width: 42px; text-align: right; }
+  .pct.high { color: #4ade80; } .pct.medium { color: #fbbf24; } .pct.low { color: #f87171; }
+  .suite { background: #1e293b; border: 1px solid #334155; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+  .suite-header { padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; background: #172033; }
+  .suite-name { font-size: 0.875rem; font-weight: 600; color: #e2e8f0; }
+  .suite-count { font-size: 0.75rem; color: #4ade80; background: #14532d; padding: 2px 8px; border-radius: 99px; }
+  .suite-count.fail { color: #f87171; background: #450a0a; }
+  .test-list { padding: 8px 0; }
+  .test-item { display: flex; align-items: center; gap: 10px; padding: 6px 18px; font-size: 0.8rem; color: #94a3b8; }
+  .test-item:hover { background: #253349; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+  .fail-dot { width: 8px; height: 8px; border-radius: 50%; background: #f87171; flex-shrink: 0; }
+  footer { text-align: center; padding: 24px; color: #475569; font-size: 0.78rem; border-top: 1px solid #1e293b; margin-top: 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Bizpark.Commerce — Test Report</h1>
+  <p>Generated: 3/27/2026, 15:11:40 &nbsp;|&nbsp; Jest + ts-jest &nbsp;|&nbsp; Node.js</p>
+</header>
+<div class="container">
+
+  <div class="summary">
+    <div class="card"><div class="value green">61</div><div class="label">Passed</div></div>
+    <div class="card"><div class="value green">0</div><div class="label">Failed</div></div>
+    <div class="card"><div class="value blue">11</div><div class="label">Suites</div></div>
+    <div class="card"><div class="value purple">31.58s</div><div class="label">Duration</div></div>
+    <div class="card"><div class="value yellow">N/A%</div><div class="label">Stmt Coverage</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      Coverage by File
+      <span class="badge">Stmts N/A% &nbsp;|&nbsp; Branches N/A% &nbsp;|&nbsp; Functions N/A%</span>
+    </div>
+    <table>
+      <thead><tr><th>File</th><th>Statements</th><th>Branches</th><th>Functions</th><th>Lines</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">
+      Test Suites
+      <span class="badge pass">61 passed / 61 total</span>
+    </div>
+    
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">payments service</span>
+          <span class="suite-count">5 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>PaymentsService createPaymentIntent returns a payment intent with correct shape</div><div class="test-item"><span class="dot"></span>PaymentsService createPaymentIntent defaults currency to USD</div><div class="test-item"><span class="dot"></span>PaymentsService createPaymentIntent uses provided currency</div><div class="test-item"><span class="dot"></span>PaymentsService createPaymentIntent generates unique IDs per call</div><div class="test-item"><span class="dot"></span>PaymentsService processWebhook returns accepted with event echoed back</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">tenant service</span>
+          <span class="suite-count">7 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>TenantService resolveTenantId uses explicit x-tenant-id header when provided</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId normalizes explicit tenant id to lowercase</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId extracts subdomain from multi-part hostname</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId returns "public" for two-part hostname (no subdomain)</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId returns "public" when no host and no explicit tenant</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId returns "public" for empty explicit tenant id</div><div class="test-item"><span class="dot"></span>TenantService resolveTenantId prefers explicit header over subdomain</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">app service</span>
+          <span class="suite-count">2 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>AppService returns health status with correct shape</div><div class="test-item"><span class="dot"></span>AppService returns a valid ISO timestamp</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">roles guard</span>
+          <span class="suite-count">6 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>RolesGuard allows access when no roles are required</div><div class="test-item"><span class="dot"></span>RolesGuard allows ADMIN when ADMIN role is required</div><div class="test-item"><span class="dot"></span>RolesGuard allows CUSTOMER when CUSTOMER role is required</div><div class="test-item"><span class="dot"></span>RolesGuard throws ForbiddenException when CUSTOMER tries ADMIN route</div><div class="test-item"><span class="dot"></span>RolesGuard throws ForbiddenException when no user on request</div><div class="test-item"><span class="dot"></span>RolesGuard allows when multiple roles required and user matches one</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">customers service</span>
+          <span class="suite-count">3 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>CustomersService list returns all customers</div><div class="test-item"><span class="dot"></span>CustomersService create creates a customer with normalized email</div><div class="test-item"><span class="dot"></span>CustomersService create sets name to null when not provided</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">cart service</span>
+          <span class="suite-count">7 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>CartService getCart returns existing cart</div><div class="test-item"><span class="dot"></span>CartService getCart creates new cart if none exists</div><div class="test-item"><span class="dot"></span>CartService addItem adds new item to cart</div><div class="test-item"><span class="dot"></span>CartService addItem increments quantity for existing item</div><div class="test-item"><span class="dot"></span>CartService removeItem removes item from cart</div><div class="test-item"><span class="dot"></span>CartService removeItem returns null when cart not found</div><div class="test-item"><span class="dot"></span>CartService clearCart removes all items from cart</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">catalog service</span>
+          <span class="suite-count">5 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>CatalogService listProducts returns all products sorted by createdAt DESC</div><div class="test-item"><span class="dot"></span>CatalogService listProducts returns empty array when no products</div><div class="test-item"><span class="dot"></span>CatalogService createProduct creates product with all fields</div><div class="test-item"><span class="dot"></span>CatalogService createProduct defaults currency to USD when not provided</div><div class="test-item"><span class="dot"></span>CatalogService createProduct sets description to null when not provided</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">inventory service</span>
+          <span class="suite-count">7 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>InventoryService list returns all inventory items</div><div class="test-item"><span class="dot"></span>InventoryService upsert creates new inventory item when SKU does not exist</div><div class="test-item"><span class="dot"></span>InventoryService upsert updates existing inventory item when SKU exists</div><div class="test-item"><span class="dot"></span>InventoryService upsert clamps negative availableQuantity to 0</div><div class="test-item"><span class="dot"></span>InventoryService reserve reserves stock when sufficient quantity available</div><div class="test-item"><span class="dot"></span>InventoryService reserve returns failure when insufficient stock</div><div class="test-item"><span class="dot"></span>InventoryService reserve returns failure when SKU not found</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">shipping service</span>
+          <span class="suite-count">6 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>ShippingService listMethods returns all shipping methods</div><div class="test-item"><span class="dot"></span>ShippingService createMethod creates method with defaults</div><div class="test-item"><span class="dot"></span>ShippingService quote returns shipping quote for active method</div><div class="test-item"><span class="dot"></span>ShippingService quote applies free shipping discount for orders over $100</div><div class="test-item"><span class="dot"></span>ShippingService quote adds weight fee to shipping amount</div><div class="test-item"><span class="dot"></span>ShippingService quote returns failure when method not found</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">orders service</span>
+          <span class="suite-count">3 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>OrdersService list returns all orders sorted by createdAt DESC</div><div class="test-item"><span class="dot"></span>OrdersService create creates an order with PENDING status</div><div class="test-item"><span class="dot"></span>OrdersService create creates order items from payload</div></div>
+      </div>
+      <div class="suite">
+        <div class="suite-header">
+          <span class="suite-name">auth service</span>
+          <span class="suite-count">10 passed</span>
+        </div>
+        <div class="test-list"><div class="test-item"><span class="dot"></span>AuthService register creates a new CUSTOMER and returns token</div><div class="test-item"><span class="dot"></span>AuthService register creates ADMIN when role is ADMIN</div><div class="test-item"><span class="dot"></span>AuthService register throws BadRequestException if email already exists</div><div class="test-item"><span class="dot"></span>AuthService register normalizes email to lowercase</div><div class="test-item"><span class="dot"></span>AuthService register hashes the password before saving</div><div class="test-item"><span class="dot"></span>AuthService login returns token on valid credentials</div><div class="test-item"><span class="dot"></span>AuthService login throws UnauthorizedException for wrong password</div><div class="test-item"><span class="dot"></span>AuthService login throws UnauthorizedException for unknown email</div><div class="test-item"><span class="dot"></span>AuthService findById returns user without passwordHash</div><div class="test-item"><span class="dot"></span>AuthService findById returns null when user not found</div></div>
+      </div>
+  </div>
+
+</div>
+<footer>Bizpark.Commerce &mdash; 61 tests &middot; 11 suites &middot; 0 failures &middot; 3/27/2026, 15:11:40</footer>
+</body>
+</html>
