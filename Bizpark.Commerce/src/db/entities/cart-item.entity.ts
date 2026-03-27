@@ -9,6 +9,10 @@ export class CartItemEntity {
   @Column({ type: 'uuid' })
   productId!: string;
 
+  // null = no variant selected (product has no variants)
+  @Column({ type: 'uuid', nullable: true })
+  variantId!: string | null;
+
   @Column({ type: 'int', default: 1 })
   quantity!: number;
 
@@ -16,7 +20,7 @@ export class CartItemEntity {
   @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
   unitPrice!: number;
 
-  // Product title snapshot (so cart displays correctly even if product is renamed)
+  // Product/variant title snapshot (displays correctly even if product is renamed)
   @Column({ type: 'varchar', length: 500, default: '' })
   unitTitle!: string;
 
