@@ -513,10 +513,12 @@ check "Alice begins checkout (READY_FOR_PAYMENT)" '"READY_FOR_PAYMENT"' "$R"
 R=$(curl -s -X POST "$BASE/api/commerce/checkout/complete" \
   -H "Content-Type: application/json" -H "x-tenant-id: $TENANT" \
   -H "Authorization: Bearer $CUST1_TOKEN" \
-  -d "{\"customerId\":\"$CUST1_ID\"}")
+  -d "{\"customerId\":\"$CUST1_ID\",\"shippingAddress\":{\"name\":\"Alice Smith\",\"line1\":\"123 Main St\",\"city\":\"Colombo\",\"postalCode\":\"00100\",\"country\":\"LK\"}}")
 check "Alice completes checkout — order created" '"success":true' "$R"
 check "Checkout order has totalAmount" '"totalAmount"' "$R"
 check "Checkout order has unitPrice on items" '"unitPrice"' "$R"
+check "Checkout order has shippingName" '"shippingName":"Alice Smith"' "$R"
+check "Checkout order has shippingCity" '"shippingCity":"Colombo"' "$R"
 ALICE_ORDER_ID=$(echo "$R" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 
 R=$(curl -s "$BASE/api/commerce/cart/$CUST1_ID" \
@@ -571,6 +573,28 @@ check_status "Customer cannot place order for another customer (403)" "403" "$CO
 R=$(curl -s "$BASE/api/commerce/orders" \
   -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $ADMIN_TOKEN")
 check "Admin sees all orders" '"success":true' "$R"
+
+# Customer self-cancel
+CANCEL_ORDER=$(curl -s -X POST "$BASE/api/commerce/orders" \
+  -H "Content-Type: application/json" -H "x-tenant-id: $TENANT" \
+  -H "Authorization: Bearer $CUST1_TOKEN" \
+  -d "{\"customerId\":\"$CUST1_ID\",\"items\":[{\"productId\":\"$PROD1_ID\",\"quantity\":1,\"unitPrice\":34.99,\"unitTitle\":\"Blue T-Shirt\"}]}")
+CANCEL_ORDER_ID=$(echo "$CANCEL_ORDER" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+R=$(curl -s -X PATCH "$BASE/api/commerce/orders/$CANCEL_ORDER_ID/cancel" \
+  -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
+check "Customer can cancel own PENDING order" '"status":"CANCELLED"' "$R"
+
+# Customer cannot cancel another customer's order
+CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" -X PATCH \
+  "$BASE/api/commerce/orders/$BOB_ORDER_ID/cancel" \
+  -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
+check_status "Customer cannot cancel another customer's order (404)" "404" "$CODE" "$(cat /tmp/r.json)"
+
+# Cannot cancel PAID order (bob's is still PENDING, use alice's fulfilled order)
+CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" -X PATCH \
+  "$BASE/api/commerce/orders/$ALICE_ORDER_ID/cancel" \
+  -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
+check_status "Customer cannot cancel non-PENDING order (400)" "400" "$CODE" "$(cat /tmp/r.json)"
 
 # Status transitions
 R=$(curl -s -X PATCH "$BASE/api/commerce/orders/$ALICE_ORDER_ID/status" \
