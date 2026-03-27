@@ -541,6 +541,98 @@ R=$(curl -s "$BASE/orders" -H "x-tenant-id: $OTHER_TENANT" -H "Authorization: Be
 has   "TenantA orders not visible on TenantB"  "$R" '"data":[]'
 
 # ─────────────────────────────────────────────────────────────────────────────
+c "AUTH — UPDATE PROFILE"
+# ─────────────────────────────────────────────────────────────────────────────
+R=$(curl -s -X PATCH "$BASE/auth/profile" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN" \
+  -d '{"name":"Updated Name"}')
+has   "Update profile name"             "$R" '"success":true'
+has   "Name updated in response"        "$R" '"Updated Name"'
+
+R=$(curl -s -X PATCH "$BASE/auth/profile" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN" \
+  -d '{"currentPassword":"pass1234","newPassword":"newpass123"}')
+has   "Change password success"         "$R" '"success":true'
+
+R=$(curl -s -X PATCH "$BASE/auth/profile" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN" \
+  -d '{"currentPassword":"wrongpass","newPassword":"newpass123"}')
+hasnt "Wrong current password rejected" "$R" '"success":true'
+
+R=$(curl -s -X PATCH "$BASE/auth/profile" -H "$H_JSON" -H "$H_T" \
+  -d '{"name":"NoAuth"}')
+hasnt "Profile update requires auth"    "$R" '"success":true'
+
+# ─────────────────────────────────────────────────────────────────────────────
+c "CUSTOMERS — ADMIN"
+# ─────────────────────────────────────────────────────────────────────────────
+# customers table is a separate CRM entity — create one first
+R=$(curl -s -X POST "$BASE/customers" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d "{\"email\":\"crm_${TS}@test.com\",\"name\":\"CRM Customer\"}")
+has   "Admin create CRM customer"       "$R" '"success":true'
+CRM_ID=$(echo "$R" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+R=$(curl -s "$BASE/customers" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN")
+has   "Admin list customers"            "$R" '"success":true'
+has   "Customers has data array"        "$R" '"data"'
+has   "CRM customer in list"            "$R" "crm_${TS}@test.com"
+
+R=$(curl -s "$BASE/customers" -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN")
+hasnt "Customer cannot list customers"  "$R" '"success":true'
+
+R=$(curl -s "$BASE/customers/$CRM_ID" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN")
+has   "Admin get single customer"       "$R" '"success":true'
+has   "Customer detail has email"       "$R" "crm_${TS}@test.com"
+
+R=$(curl -s -X PATCH "$BASE/customers/$CRM_ID" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"name":"Updated CRM Name"}')
+has   "Admin update CRM customer"       "$R" '"Updated CRM Name"'
+
+R=$(curl -s "$BASE/customers/00000000-0000-0000-0000-000000000000" \
+  -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN")
+hasnt "Nonexistent customer 404"        "$R" '"success":true'
+
+# ─────────────────────────────────────────────────────────────────────────────
+c "SHIPPING METHODS"
+# ─────────────────────────────────────────────────────────────────────────────
+R=$(curl -s -X POST "$BASE/shipping/methods" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"code":"standard","label":"Standard Shipping (3-5 days)","flatRate":5.99,"currency":"USD","active":true}')
+has   "Admin create shipping method"    "$R" '"success":true'
+has   "Method label correct"            "$R" '"Standard Shipping'
+SHIP_ID=$(echo "$R" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+R=$(curl -s -X POST "$BASE/shipping/methods" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"code":"express","label":"Express Shipping (1-2 days)","flatRate":14.99,"currency":"USD","active":true}')
+has   "Admin create express method"     "$R" '"Express Shipping'
+
+R=$(curl -s "$BASE/shipping/methods" -H "$H_T")
+has   "Public list shipping methods"    "$R" '"success":true'
+has   "Standard method in list"         "$R" '"standard"'
+has   "Express method in list"          "$R" '"express"'
+
+R=$(curl -s -X PATCH "$BASE/shipping/methods/$SHIP_ID" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -d '{"flatRate":4.99,"label":"Standard Shipping (3-5 days)"}')
+has   "Admin update shipping method"    "$R" '"success":true'
+
+R=$(curl -s -X POST "$BASE/shipping/methods" \
+  -H "$H_JSON" -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN" \
+  -d '{"code":"hack","label":"Hack","flatRate":0}')
+hasnt "Customer cannot create method"   "$R" '"success":true'
+
+R=$(curl -s -X DELETE "$BASE/shipping/methods/$SHIP_ID" \
+  -H "$H_T" -H "Authorization: Bearer $ADMIN_TOKEN")
+has   "Admin delete shipping method"    "$R" '"success":true'
+
+R=$(curl -s -X DELETE "$BASE/shipping/methods/$SHIP_ID" \
+  -H "$H_T" -H "Authorization: Bearer $CUST_TOKEN")
+hasnt "Customer cannot delete method"   "$R" '"success":true'
+
+# ─────────────────────────────────────────────────────────────────────────────
 c "CATEGORY DELETE"
 # ─────────────────────────────────────────────────────────────────────────────
 R=$(curl -s -X DELETE "$BASE/catalog/categories/$CAT_ID" \

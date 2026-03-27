@@ -162,6 +162,27 @@ export interface InventoryItem {
   updatedAt: string;
 }
 
+// ── Customers ──────────────────────────────────────────────────────
+
+export interface Customer {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  createdAt: string;
+}
+
+// ── Shipping ───────────────────────────────────────────────────────
+
+export interface ShippingMethod {
+  id: string;
+  code: string;
+  label: string;
+  flatRate: number;
+  currency: string;
+  active: boolean;
+}
+
 // ── Shared ─────────────────────────────────────────────────────────
 
 export interface PaginatedResponse<T> {

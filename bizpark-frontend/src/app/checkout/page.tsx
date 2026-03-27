@@ -1,19 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
-import { completeCheckout } from '@/lib/api';
+import { completeCheckout, getShippingMethods } from '@/lib/api';
+import type { ShippingMethod } from '@/types';
 import Link from 'next/link';
 
 interface ShippingForm {
-  name: string;
-  line1: string;
-  line2: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
+  name: string; line1: string; line2: string;
+  city: string; state: string; postalCode: string; country: string;
 }
 
 export default function CheckoutPage() {
@@ -22,11 +18,19 @@ export default function CheckoutPage() {
   const currency = config?.currency ?? 'USD';
   const router = useRouter();
 
-  const [form, setForm] = useState<ShippingForm>({
-    name: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: 'US',
-  });
+  const [form, setForm] = useState<ShippingForm>({ name: '', line1: '', line2: '', city: '', state: '', postalCode: '', country: 'US' });
+  const [shippingMethods, setShippingMethods] = useState<ShippingMethod[]>([]);
+  const [selectedMethod, setSelectedMethod] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    getShippingMethods().then(r => {
+      const active = r.data.filter(m => m.active);
+      setShippingMethods(active);
+      if (active.length > 0) setSelectedMethod(active[0].id);
+    }).catch(() => {});
+  }, []);
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n);
 
@@ -48,7 +52,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const total = cart.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const subtotal = cart.items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const selectedShipping = shippingMethods.find(m => m.id === selectedMethod);
+  const shippingCost = selectedShipping?.flatRate ?? 0;
+  const total = subtotal + shippingCost;
 
   const set = (field: keyof ShippingForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }));
@@ -59,13 +66,8 @@ export default function CheckoutPage() {
     setLoading(true);
     try {
       const res = await completeCheckout(user.id, token, {
-        name: form.name,
-        line1: form.line1,
-        line2: form.line2 || undefined,
-        city: form.city,
-        state: form.state || undefined,
-        postalCode: form.postalCode,
-        country: form.country,
+        name: form.name, line1: form.line1, line2: form.line2 || undefined,
+        city: form.city, state: form.state || undefined, postalCode: form.postalCode, country: form.country,
       });
       await refreshCart();
       router.push(`/orders/${res.order.id}`);
@@ -83,8 +85,9 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
       <div className="grid md:grid-cols-3 gap-8">
-        {/* Shipping Form */}
         <form onSubmit={handleSubmit} className="md:col-span-2 space-y-5">
+
+          {/* Shipping Address */}
           <div className="bg-white border rounded-xl p-6">
             <h2 className="font-semibold text-gray-900 mb-4">Shipping Address</h2>
             <div className="space-y-4">
@@ -123,14 +126,29 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* Shipping Method */}
+          {shippingMethods.length > 0 && (
+            <div className="bg-white border rounded-xl p-6">
+              <h2 className="font-semibold text-gray-900 mb-4">Shipping Method</h2>
+              <div className="space-y-2">
+                {shippingMethods.map(m => (
+                  <label key={m.id} className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-colors ${selectedMethod === m.id ? 'border-primary bg-primary/5' : 'hover:bg-gray-50'}`} style={selectedMethod === m.id ? { borderColor: primary, backgroundColor: `${primary}0d` } : {}}>
+                    <div className="flex items-center gap-3">
+                      <input type="radio" name="shipping" value={m.id} checked={selectedMethod === m.id} onChange={() => setSelectedMethod(m.id)} className="text-primary" />
+                      <span className="text-sm font-medium text-gray-900">{m.label}</span>
+                    </div>
+                    <span className="text-sm font-semibold" style={{ color: primary }}>
+                      {m.flatRate === 0 ? 'Free' : fmt(m.flatRate)}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {error && <p className="text-sm text-red-500 bg-red-50 px-4 py-3 rounded-lg">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: primary }}
-          >
+          <button type="submit" disabled={loading} className="w-full py-3 rounded-xl font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: primary }}>
             {loading ? 'Placing Order...' : `Place Order · ${fmt(total)}`}
           </button>
         </form>
@@ -145,9 +163,19 @@ export default function CheckoutPage() {
                 <span className="font-medium text-gray-900 flex-shrink-0">{fmt(item.unitPrice * item.quantity)}</span>
               </div>
             ))}
-            <div className="border-t pt-3 flex justify-between font-bold text-gray-900">
-              <span>Total</span>
-              <span>{fmt(total)}</span>
+            <div className="border-t pt-3 space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span><span>{fmt(subtotal)}</span>
+              </div>
+              {selectedShipping && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Shipping</span>
+                  <span>{selectedShipping.flatRate === 0 ? 'Free' : fmt(shippingCost)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t">
+                <span>Total</span><span>{fmt(total)}</span>
+              </div>
             </div>
           </div>
         </div>

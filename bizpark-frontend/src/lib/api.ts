@@ -1,7 +1,7 @@
 import { getTenantId } from './tenant';
 import type {
-  AuthUser, Cart, Category, InventoryItem, Order, PaginatedResponse,
-  Product, ProductVariant, WebsiteConfig, WebsiteConfigContent,
+  AuthUser, Cart, Category, Customer, InventoryItem, Order, PaginatedResponse,
+  Product, ProductVariant, ShippingMethod, WebsiteConfig, WebsiteConfigContent,
 } from '@/types';
 
 const BASE = process.env.NEXT_PUBLIC_COMMERCE_URL || 'http://localhost:3003';
@@ -189,4 +189,36 @@ export const adminGetInventoryByProduct = (token: string, productId: string) =>
 export const adminUpsertInventory = (token: string, dto: { productId: string; sku: string; availableQuantity: number; variantId?: string }) =>
   req<{ success: boolean; data: InventoryItem }>('/api/commerce/inventory/upsert', {
     method: 'POST', body: JSON.stringify(dto),
+  }, token);
+
+// ── Auth — Profile ────────────────────────────────────────────────
+export const updateProfile = (token: string, dto: { name?: string; currentPassword?: string; newPassword?: string }) =>
+  req<{ success: boolean; data: AuthUser }>('/api/commerce/auth/profile', {
+    method: 'PATCH', body: JSON.stringify(dto),
+  }, token);
+
+// ── Customers — Admin ─────────────────────────────────────────────
+export const adminListCustomers = (token: string) =>
+  req<{ success: boolean; data: Customer[] }>('/api/commerce/customers', {}, token);
+
+export const adminGetCustomer = (token: string, id: string) =>
+  req<{ success: boolean; data: Customer }>(`/api/commerce/customers/${id}`, {}, token);
+
+// ── Shipping ──────────────────────────────────────────────────────
+export const getShippingMethods = () =>
+  req<{ success: boolean; data: ShippingMethod[] }>('/api/commerce/shipping/methods');
+
+export const adminCreateShippingMethod = (token: string, dto: { code: string; label: string; flatRate: number; currency?: string; active?: boolean }) =>
+  req<{ success: boolean; data: ShippingMethod }>('/api/commerce/shipping/methods', {
+    method: 'POST', body: JSON.stringify(dto),
+  }, token);
+
+export const adminUpdateShippingMethod = (token: string, id: string, dto: { label?: string; flatRate?: number; currency?: string; active?: boolean }) =>
+  req<{ success: boolean; data: ShippingMethod }>(`/api/commerce/shipping/methods/${id}`, {
+    method: 'PATCH', body: JSON.stringify(dto),
+  }, token);
+
+export const adminDeleteShippingMethod = (token: string, id: string) =>
+  req<{ success: boolean; data: ShippingMethod }>(`/api/commerce/shipping/methods/${id}`, {
+    method: 'DELETE',
   }, token);
