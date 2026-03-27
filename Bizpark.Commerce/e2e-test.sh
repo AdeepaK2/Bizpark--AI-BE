@@ -428,7 +428,7 @@ check "Admin creates customer without name (name=null)" '"name":null' "$R"
 # --- 17. MULTI-TENANT ISOLATION ---
 echo ""
 echo "${BOLD}[17] Multi-Tenant Isolation${NC}"
-TENANT2="test-biz-2"
+TENANT2="test-biz-$RUN"   # fresh tenant per run — no leftover admin from previous runs
 
 BOOT2=$(curl -s -X POST "$BASE/api/commerce/auth/bootstrap" \
   -H "Content-Type: application/json" -H "x-tenant-id: $TENANT2" \
