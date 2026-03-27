@@ -23,12 +23,42 @@
 └─────────────────────────────────────────────────┘
 ```
 
+## Ecommerce Architecture (Commerce + Frontend)
+
+```
+                      FRONTEND
+┌─────────────────────────────────────────┐
+│           Bizpark.Frontend              │
+│         Next.js · Port 3004             │
+│  placeholder config · all store pages  │
+└──────────────────┬──────────────────────┘
+                   │ HTTP + x-tenant-id header
+                   ▼
+                  BACKEND
+┌─────────────────────────────────────────┐
+│           Bizpark.Commerce              │
+│           NestJS · Port 3003            │
+│  Auth · Catalog · Cart · Checkout       │
+│  Orders · Inventory · Payments · Config │
+└──────────────────┬──────────────────────┘
+                   │
+                  DATABASE
+┌─────────────────────────────────────────┐
+│       Neon PostgreSQL (Commerce)        │
+│  ├── tenant_business_a  (isolated)      │
+│  ├── tenant_business_b  (isolated)      │
+│  └── tenant_...                         │
+└─────────────────────────────────────────┘
+```
+
 | Package | Description | Port | Tech |
 |---|---|---|---|
 | **Bizpark.Core** | Shared library (entities, DTOs, DB config) | — | TypeScript |
 | **Bizpark.API** | REST API (auth, business, website, agents) | 3000 | NestJS |
 | **Bizpark.Runner.Py** | BullMQ worker (AI agent task processor) | 3001 | FastAPI |
 | **Bizpark.Admin** | Admin API (template management) | 3002 | NestJS |
+| **Bizpark.Commerce** | Multi-tenant ecommerce backend (per-business store) | 3003 | NestJS |
+| **Bizpark.Frontend** | Placeholder storefront — connects to Commerce, config-driven | 3004 | Next.js |
 
 ## Prerequisites
 
@@ -90,6 +120,16 @@ python run.py
 cd Bizpark.Admin
 npm install
 npm run start:dev
+
+# Terminal 4 — Commerce backend
+cd Bizpark.Commerce
+npm install
+npm run start:dev
+
+# Terminal 5 — Frontend storefront
+cd Bizpark.Frontend
+npm install
+npm run dev
 ```
 
 ## API Endpoints
@@ -172,11 +212,11 @@ All services share [`Bizpark.Core/.env`](./Bizpark.Core/.env.example)
 
 ## Database Schema
 
-Single PostgreSQL database with 3 isolated schemas:
+```
+Neon PostgreSQL (Main)              Neon PostgreSQL (Commerce — separate project)
+├── api      → User, Business       ├── tenant_<businessId>  → products, orders,
+├── admin    → Template             │   customers, cart, inventory, config ...
+└── runner   → AgentTask            └── tenant_<businessId2> → isolated per business
+```
 
-```
-neondb
-├── api      → User, Business, BusinessUser, Website
-├── admin    → Template
-└── runner   → AgentTask
-```
+> Commerce uses a **separate Neon project**. Each business gets its own schema auto-created on first request. See [`Bizpark.Commerce/README.md`](./Bizpark.Commerce/README.md).
