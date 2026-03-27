@@ -34,3 +34,20 @@ export class CommerceLoginDto {
   @IsNotEmpty({ message: 'Password is required' })
   password!: string;
 }
+
+export class UpdateProfileDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty({ message: 'Name cannot be empty' })
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(6, { message: 'New password must be at least 6 characters' })
+  newPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  currentPassword?: string;
+}

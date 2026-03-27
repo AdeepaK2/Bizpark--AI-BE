@@ -16,6 +16,13 @@ export class SubscriptionsService {
     return repo.find({ where: { customerId }, order: { createdAt: 'DESC' } });
   }
 
+  async getById(tenantId: string, subscriptionId: string) {
+    const repo = await this.repo(tenantId);
+    const sub = await repo.findOne({ where: { id: subscriptionId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return sub;
+  }
+
   async create(tenantId: string, payload: { customerId: string; planCode: string }) {
     const repo = await this.repo(tenantId);
     const subscription = repo.create({

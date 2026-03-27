@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { CartService } from './cart.service';
+import { AddCartItemDto } from './dtos';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
@@ -33,7 +34,7 @@ export class CartController {
     @TenantId() tenantId: string,
     @Param('customerId') customerId: string,
     @CurrentUser() user: JwtUser,
-    @Body() dto: { productId: string; quantity: number },
+    @Body() dto: AddCartItemDto,
   ) {
     assertCartAccess(user, customerId);
     return { success: true, data: await this.cartService.addItem(tenantId, customerId, dto) };

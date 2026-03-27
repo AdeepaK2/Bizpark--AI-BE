@@ -1,11 +1,13 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, UseGuards } from '@nestjs/common';
 import { TenantId } from '../tenant/tenant.decorator';
 import { AuthService } from './auth.service';
-import { CommerceAdminRegisterDto, CommerceLoginDto, CommerceRegisterDto } from './dtos';
+import { CommerceAdminRegisterDto, CommerceLoginDto, CommerceRegisterDto, UpdateProfileDto } from './dtos';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 import { Roles } from './roles.decorator';
 import { CurrentUser } from './current-user.decorator';
+
+type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
 @Controller('api/commerce/auth')
 export class AuthController {
@@ -43,5 +45,20 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: unknown) {
     return { success: true, data: user };
+  }
+
+  // Protected — update own profile (name and/or password)
+  @Patch('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(@TenantId() tenantId: string, @CurrentUser() user: JwtUser, @Body() dto: UpdateProfileDto) {
+    return { success: true, data: await this.authService.updateProfile(tenantId, user.id, dto) };
+  }
+
+  // Logout — client-side token discard (stateless JWT, no server blacklist)
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  logout() {
+    return { success: true, message: 'Logged out. Please discard your token.' };
   }
 }

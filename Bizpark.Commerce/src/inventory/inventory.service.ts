@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
 import { InventoryItemEntity } from '../db/entities';
 
@@ -9,6 +9,13 @@ export class InventoryService {
   async list(tenantId: string) {
     const repo = await this.repo(tenantId);
     return repo.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async getByProductId(tenantId: string, productId: string) {
+    const repo = await this.repo(tenantId);
+    const item = await repo.findOne({ where: { productId } });
+    if (!item) throw new NotFoundException('Inventory item not found for this product');
+    return item;
   }
 
   async upsert(
@@ -51,6 +58,44 @@ export class InventoryService {
     item.reservedQuantity += quantity;
     const saved = await repo.save(item);
     return { success: true, data: saved };
+  }
+
+  /**
+   * Reserve inventory by productId (used by checkout).
+   * Returns { success, message? } so callers can decide whether to abort.
+   */
+  async reserveByProductId(tenantId: string, productId: string, quantity: number): Promise<{ success: boolean; message?: string }> {
+    const repo = await this.repo(tenantId);
+    const item = await repo.findOne({ where: { productId } });
+
+    if (!item) {
+      // No inventory record = untracked product, allow checkout
+      return { success: true };
+    }
+
+    const qty = Math.max(1, Number(quantity));
+    if (item.availableQuantity < qty) {
+      return { success: false, message: `Insufficient stock for product ${productId}` };
+    }
+
+    item.availableQuantity -= qty;
+    item.reservedQuantity += qty;
+    await repo.save(item);
+    return { success: true };
+  }
+
+  /**
+   * Release reserved inventory back to available (used when order is CANCELLED).
+   */
+  async releaseByProductId(tenantId: string, productId: string, quantity: number): Promise<void> {
+    const repo = await this.repo(tenantId);
+    const item = await repo.findOne({ where: { productId } });
+    if (!item) return;
+
+    const qty = Math.max(1, Number(quantity));
+    item.reservedQuantity = Math.max(0, item.reservedQuantity - qty);
+    item.availableQuantity += qty;
+    await repo.save(item);
   }
 
   private async repo(tenantId: string) {

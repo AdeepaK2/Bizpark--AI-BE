@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -25,5 +25,14 @@ export class CustomersController {
   @Post()
   async create(@TenantId() tenantId: string, @Body() dto: { email: string; name?: string }) {
     return { success: true, data: await this.customersService.create(tenantId, dto) };
+  }
+
+  @Patch(':id')
+  async update(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+    @Body() dto: { email?: string; name?: string },
+  ) {
+    return { success: true, data: await this.customersService.update(tenantId, id, dto) };
   }
 }

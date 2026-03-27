@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { SubscriptionsService } from './subscriptions.service';
-import { SubscriptionStatus } from '../db/entities';
+import { CreateSubscriptionDto, UpdateSubscriptionStatusDto } from './dtos';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
@@ -23,11 +23,25 @@ export class SubscriptionsController {
     return { success: true, data: await this.subscriptionsService.listByCustomer(tenantId, user.id) };
   }
 
+  // ADMIN → any; CUSTOMER → own only
+  @Get(':id')
+  async getOne(
+    @TenantId() tenantId: string,
+    @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    const sub = await this.subscriptionsService.getById(tenantId, id);
+    if (user.role !== 'ADMIN' && sub.customerId !== user.id) {
+      throw new ForbiddenException('Access denied');
+    }
+    return { success: true, data: sub };
+  }
+
   // Any authenticated user can subscribe
   @Post()
   async create(
     @TenantId() tenantId: string,
-    @Body() dto: { customerId: string; planCode: string },
+    @Body() dto: CreateSubscriptionDto,
   ) {
     return { success: true, data: await this.subscriptionsService.create(tenantId, dto) };
   }
@@ -37,7 +51,12 @@ export class SubscriptionsController {
   async cancel(
     @TenantId() tenantId: string,
     @Param('id') id: string,
+    @CurrentUser() user: JwtUser,
   ) {
+    const sub = await this.subscriptionsService.getById(tenantId, id);
+    if (user.role !== 'ADMIN' && sub.customerId !== user.id) {
+      throw new ForbiddenException('Access denied: not your subscription');
+    }
     return { success: true, data: await this.subscriptionsService.cancel(tenantId, id) };
   }
 
@@ -48,7 +67,7 @@ export class SubscriptionsController {
   async updateStatus(
     @TenantId() tenantId: string,
     @Param('id') id: string,
-    @Body() dto: { status: SubscriptionStatus },
+    @Body() dto: UpdateSubscriptionStatusDto,
   ) {
     return { success: true, data: await this.subscriptionsService.updateStatus(tenantId, id, dto.status) };
   }

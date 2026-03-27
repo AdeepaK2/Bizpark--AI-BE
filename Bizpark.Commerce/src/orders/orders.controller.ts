@@ -5,7 +5,7 @@ import { Roles } from '../auth/roles.decorator';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { OrdersService } from './orders.service';
-import { OrderStatus } from '../db/entities';
+import { CreateOrderDto, UpdateOrderStatusDto } from './dtos';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
@@ -46,12 +46,8 @@ export class OrdersController {
   async updateStatus(
     @TenantId() tenantId: string,
     @Param('id') orderId: string,
-    @Body() dto: { status: OrderStatus },
+    @Body() dto: UpdateOrderStatusDto,
   ) {
-    const validStatuses: OrderStatus[] = ['PENDING', 'PAID', 'FULFILLED', 'CANCELLED'];
-    if (!validStatuses.includes(dto.status)) {
-      throw new ForbiddenException(`Invalid status. Allowed: ${validStatuses.join(', ')}`);
-    }
     return { success: true, data: await this.ordersService.updateStatus(tenantId, orderId, dto.status) };
   }
 
@@ -60,7 +56,7 @@ export class OrdersController {
   async create(
     @TenantId() tenantId: string,
     @CurrentUser() user: JwtUser,
-    @Body() dto: { customerId: string; items: Array<{ productId: string; quantity: number }> },
+    @Body() dto: CreateOrderDto,
   ) {
     // Customers can only create orders for themselves
     if (user.role !== 'ADMIN' && dto.customerId !== user.id) {

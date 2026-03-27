@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
 import { ShippingMethodEntity } from '../db/entities';
 
@@ -24,6 +24,31 @@ export class ShippingService {
       active: payload.active ?? true,
     });
     return repo.save(method);
+  }
+
+  async updateMethod(
+    tenantId: string,
+    id: string,
+    payload: { label?: string; flatRate?: number; currency?: string; active?: boolean },
+  ) {
+    const repo = await this.repo(tenantId);
+    const method = await repo.findOne({ where: { id } });
+    if (!method) throw new NotFoundException('Shipping method not found');
+
+    if (payload.label !== undefined) method.label = payload.label;
+    if (payload.flatRate !== undefined) method.flatRate = Number(payload.flatRate);
+    if (payload.currency !== undefined) method.currency = payload.currency;
+    if (payload.active !== undefined) method.active = payload.active;
+
+    return repo.save(method);
+  }
+
+  async deleteMethod(tenantId: string, id: string) {
+    const repo = await this.repo(tenantId);
+    const method = await repo.findOne({ where: { id } });
+    if (!method) throw new NotFoundException('Shipping method not found');
+    await repo.remove(method);
+    return { deleted: true, id };
   }
 
   async quote(

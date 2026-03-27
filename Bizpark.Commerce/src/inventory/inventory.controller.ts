@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -15,6 +15,11 @@ export class InventoryController {
   @Get()
   async list(@TenantId() tenantId: string) {
     return { success: true, data: await this.inventoryService.list(tenantId) };
+  }
+
+  @Get('items/:productId')
+  async getByProductId(@TenantId() tenantId: string, @Param('productId') productId: string) {
+    return { success: true, data: await this.inventoryService.getByProductId(tenantId, productId) };
   }
 
   @Post('upsert')
