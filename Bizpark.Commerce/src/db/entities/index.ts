@@ -5,10 +5,12 @@ export type { CommerceUserRole } from './commerce-user.entity';
 export { CustomerEntity } from './customer.entity';
 export { InventoryItemEntity } from './inventory-item.entity';
 export { OrderEntity } from './order.entity';
+export type { OrderStatus } from './order.entity';
 export { OrderItemEntity } from './order-item.entity';
 export { ProductEntity } from './product.entity';
 export { ShippingMethodEntity } from './shipping-method.entity';
 export { SubscriptionEntity } from './subscription.entity';
+export type { SubscriptionStatus } from './subscription.entity';
 
 import { CartEntity } from './cart.entity';
 import { CartItemEntity } from './cart-item.entity';

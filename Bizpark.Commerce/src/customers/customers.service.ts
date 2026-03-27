@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
 import { CustomerEntity } from '../db/entities';
 
@@ -9,6 +9,13 @@ export class CustomersService {
   async list(tenantId: string) {
     const repo = await this.repo(tenantId);
     return repo.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async getById(tenantId: string, customerId: string) {
+    const repo = await this.repo(tenantId);
+    const customer = await repo.findOne({ where: { id: customerId } });
+    if (!customer) throw new NotFoundException('Customer not found');
+    return customer;
   }
 
   async create(tenantId: string, payload: { email: string; name?: string }) {

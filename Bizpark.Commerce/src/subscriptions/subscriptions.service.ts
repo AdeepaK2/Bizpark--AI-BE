@@ -1,36 +1,50 @@
-import { randomUUID } from 'crypto';
-import { Injectable } from '@nestjs/common';
-
-type Subscription = {
-  id: string;
-  tenantId: string;
-  customerId: string;
-  planCode: string;
-  status: 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
-  startedAt: string;
-};
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { SubscriptionEntity, SubscriptionStatus } from '../db/entities';
 
 @Injectable()
 export class SubscriptionsService {
-  private readonly subscriptionsByTenant = new Map<string, Subscription[]>();
+  constructor(private readonly tenantDb: TenantDataSourceFactory) {}
 
-  list(tenantId: string) {
-    return this.subscriptionsByTenant.get(tenantId) || [];
+  async list(tenantId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  create(tenantId: string, payload: { customerId: string; planCode: string }) {
-    const subscription: Subscription = {
-      id: randomUUID(),
-      tenantId,
+  async listByCustomer(tenantId: string, customerId: string) {
+    const repo = await this.repo(tenantId);
+    return repo.find({ where: { customerId }, order: { createdAt: 'DESC' } });
+  }
+
+  async create(tenantId: string, payload: { customerId: string; planCode: string }) {
+    const repo = await this.repo(tenantId);
+    const subscription = repo.create({
       customerId: payload.customerId,
       planCode: payload.planCode,
       status: 'ACTIVE',
-      startedAt: new Date().toISOString(),
-    };
+      startedAt: new Date(),
+    });
+    return repo.save(subscription);
+  }
 
-    const existing = this.subscriptionsByTenant.get(tenantId) || [];
-    this.subscriptionsByTenant.set(tenantId, [subscription, ...existing]);
+  async cancel(tenantId: string, subscriptionId: string) {
+    const repo = await this.repo(tenantId);
+    const sub = await repo.findOne({ where: { id: subscriptionId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    sub.status = 'CANCELLED';
+    return repo.save(sub);
+  }
 
-    return subscription;
+  async updateStatus(tenantId: string, subscriptionId: string, status: SubscriptionStatus) {
+    const repo = await this.repo(tenantId);
+    const sub = await repo.findOne({ where: { id: subscriptionId } });
+    if (!sub) throw new NotFoundException('Subscription not found');
+    sub.status = status;
+    return repo.save(sub);
+  }
+
+  private async repo(tenantId: string) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    return ds.getRepository(SubscriptionEntity);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -15,6 +15,11 @@ export class CustomersController {
   @Get()
   async list(@TenantId() tenantId: string) {
     return { success: true, data: await this.customersService.list(tenantId) };
+  }
+
+  @Get(':id')
+  async getOne(@TenantId() tenantId: string, @Param('id') id: string) {
+    return { success: true, data: await this.customersService.getById(tenantId, id) };
   }
 
   @Post()

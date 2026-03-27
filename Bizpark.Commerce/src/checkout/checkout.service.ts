@@ -25,16 +25,20 @@ export class CheckoutService {
 
   async completeCheckout(tenantId: string, payload: { customerId: string }) {
     const cart = await this.cartService.getCart(tenantId, payload.customerId);
-    const order = this.ordersService.create(tenantId, {
+
+    // Pass price + title snapshots from cart items so order records are accurate
+    const order = await this.ordersService.create(tenantId, {
       customerId: payload.customerId,
-      items: cart.items,
+      items: cart.items.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        unitPrice: Number(i.unitPrice ?? 0),
+        unitTitle: i.unitTitle ?? '',
+      })),
     });
 
-    this.cartService.clearCart(tenantId, payload.customerId);
+    await this.cartService.clearCart(tenantId, payload.customerId);
 
-    return {
-      success: true,
-      order,
-    };
+    return { success: true, order };
   }
 }

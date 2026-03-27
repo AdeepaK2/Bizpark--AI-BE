@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
-import { CartEntity, CartItemEntity } from '../db/entities';
+import { CartEntity, CartItemEntity, ProductEntity } from '../db/entities';
 
 @Injectable()
 export class CartService {
@@ -29,14 +29,23 @@ export class CartService {
       cart = await cartRepo.save(cartRepo.create({ customerId, items: [] }));
     }
 
+    // Snapshot product price + title at the time of adding to cart
+    const productRepo = ds.getRepository(ProductEntity);
+    const product = await productRepo.findOne({ where: { id: payload.productId } });
+    const unitPrice = product ? Number(product.price) : 0;
+    const unitTitle = product ? product.title : 'Unknown Product';
+
     const quantity = Math.max(1, Number(payload.quantity || 1));
     const existing = cart.items.find((i: CartItemEntity) => i.productId === payload.productId);
 
     if (existing) {
       existing.quantity += quantity;
+      // Refresh price snapshot in case product price changed
+      existing.unitPrice = unitPrice;
+      existing.unitTitle = unitTitle;
       await itemRepo.save(existing);
     } else {
-      await itemRepo.save(itemRepo.create({ productId: payload.productId, quantity, cart }));
+      await itemRepo.save(itemRepo.create({ productId: payload.productId, quantity, unitPrice, unitTitle, cart }));
     }
 
     return cartRepo.findOne({ where: { customerId } });
