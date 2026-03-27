@@ -1,19 +1,20 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { InventoryService } from './inventory.service';
 
+// All inventory routes — ADMIN only
 @Controller('api/commerce/inventory')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Get()
   list(@TenantId() tenantId: string) {
-    return {
-      success: true,
-      data: this.inventoryService.list(tenantId),
-    };
+    return { success: true, data: this.inventoryService.list(tenantId) };
   }
 
   @Post('upsert')
@@ -21,10 +22,7 @@ export class InventoryController {
     @TenantId() tenantId: string,
     @Body() dto: { productId: string; sku: string; availableQuantity: number; reservedQuantity?: number },
   ) {
-    return {
-      success: true,
-      data: this.inventoryService.upsert(tenantId, dto),
-    };
+    return { success: true, data: this.inventoryService.upsert(tenantId, dto) };
   }
 
   @Post('reserve')

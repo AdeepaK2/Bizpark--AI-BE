@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
-import { CommerceUserEntity } from '../db/entities';
+import { CommerceUserEntity, CommerceUserRole } from '../db/entities';
 
 @Injectable()
 export class AuthService {
@@ -11,7 +11,7 @@ export class AuthService {
     private readonly tenantDb: TenantDataSourceFactory,
   ) {}
 
-  async register(tenantId: string, email: string, password: string, name: string) {
+  async register(tenantId: string, email: string, password: string, name: string, role: CommerceUserRole = 'CUSTOMER') {
     const normalizedEmail = email.trim().toLowerCase();
     const repo = await this.repo(tenantId);
 
@@ -21,12 +21,12 @@ export class AuthService {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = repo.create({ email: normalizedEmail, passwordHash, name: name.trim() });
+    const user = repo.create({ email: normalizedEmail, passwordHash, name: name.trim(), role });
     const saved = await repo.save(user);
 
     return {
-      access_token: this.jwtService.sign({ sub: saved.id, tenantId, email: saved.email }),
-      user: { id: saved.id, tenantId, email: saved.email, name: saved.name },
+      access_token: this.jwtService.sign({ sub: saved.id, tenantId, email: saved.email, role: saved.role }),
+      user: { id: saved.id, tenantId, email: saved.email, name: saved.name, role: saved.role },
     };
   }
 
@@ -41,8 +41,8 @@ export class AuthService {
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
 
     return {
-      access_token: this.jwtService.sign({ sub: user.id, tenantId, email: user.email }),
-      user: { id: user.id, tenantId, email: user.email, name: user.name },
+      access_token: this.jwtService.sign({ sub: user.id, tenantId, email: user.email, role: user.role }),
+      user: { id: user.id, tenantId, email: user.email, name: user.name, role: user.role },
     };
   }
 

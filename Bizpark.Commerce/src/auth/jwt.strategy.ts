@@ -7,6 +7,7 @@ type CommerceJwtPayload = {
   sub: string;
   tenantId: string;
   email: string;
+  role: string;
 };
 
 @Injectable()

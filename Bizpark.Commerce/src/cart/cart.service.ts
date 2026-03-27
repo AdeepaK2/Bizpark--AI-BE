@@ -30,7 +30,7 @@ export class CartService {
     }
 
     const quantity = Math.max(1, Number(payload.quantity || 1));
-    const existing = cart.items.find((i) => i.productId === payload.productId);
+    const existing = cart.items.find((i: CartItemEntity) => i.productId === payload.productId);
 
     if (existing) {
       existing.quantity += quantity;
@@ -50,7 +50,7 @@ export class CartService {
     const cart = await cartRepo.findOne({ where: { customerId } });
     if (!cart) return null;
 
-    const item = cart.items.find((i) => i.productId === productId);
+    const item = cart.items.find((i: CartItemEntity) => i.productId === productId);
     if (item) await itemRepo.remove(item);
 
     return cartRepo.findOne({ where: { customerId } });

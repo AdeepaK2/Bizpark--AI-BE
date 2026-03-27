@@ -1,6 +1,7 @@
 export { CartEntity } from './cart.entity';
 export { CartItemEntity } from './cart-item.entity';
 export { CommerceUserEntity } from './commerce-user.entity';
+export type { CommerceUserRole } from './commerce-user.entity';
 export { CustomerEntity } from './customer.entity';
 export { InventoryItemEntity } from './inventory-item.entity';
 export { OrderEntity } from './order.entity';

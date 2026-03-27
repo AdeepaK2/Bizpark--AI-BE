@@ -10,8 +10,8 @@ export class CheckoutService {
     private readonly ordersService: OrdersService,
   ) {}
 
-  beginCheckout(tenantId: string, payload: { customerId: string }) {
-    const cart = this.cartService.getCart(tenantId, payload.customerId);
+  async beginCheckout(tenantId: string, payload: { customerId: string }) {
+    const cart = await this.cartService.getCart(tenantId, payload.customerId);
 
     return {
       checkoutId: randomUUID(),
@@ -23,8 +23,8 @@ export class CheckoutService {
     };
   }
 
-  completeCheckout(tenantId: string, payload: { customerId: string }) {
-    const cart = this.cartService.getCart(tenantId, payload.customerId);
+  async completeCheckout(tenantId: string, payload: { customerId: string }) {
+    const cart = await this.cartService.getCart(tenantId, payload.customerId);
     const order = this.ordersService.create(tenantId, {
       customerId: payload.customerId,
       items: cart.items,

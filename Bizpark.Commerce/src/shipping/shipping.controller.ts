@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { ShippingService } from './shipping.service';
 
@@ -7,33 +9,24 @@ import { ShippingService } from './shipping.service';
 export class ShippingController {
   constructor(private readonly shippingService: ShippingService) {}
 
+  // Public — list available shipping methods
   @Get('methods')
   listMethods(@TenantId() tenantId: string) {
-    return {
-      success: true,
-      data: this.shippingService.listMethods(tenantId),
-    };
+    return { success: true, data: this.shippingService.listMethods(tenantId) };
   }
 
+  // ADMIN only — create shipping methods
   @Post('methods')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   createMethod(
     @TenantId() tenantId: string,
-    @Body()
-    dto: {
-      code: string;
-      label: string;
-      flatRate: number;
-      currency?: string;
-      active?: boolean;
-    },
+    @Body() dto: { code: string; label: string; flatRate: number; currency?: string; active?: boolean },
   ) {
-    return {
-      success: true,
-      data: this.shippingService.createMethod(tenantId, dto),
-    };
+    return { success: true, data: this.shippingService.createMethod(tenantId, dto) };
   }
 
+  // Public — get shipping quote
   @Post('quote')
   quote(
     @TenantId() tenantId: string,

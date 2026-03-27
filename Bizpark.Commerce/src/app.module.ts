@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,12 +16,15 @@ import { ShippingModule } from './shipping/shipping.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { TenantModule } from './tenant/tenant.module';
 import { TenantMiddleware } from './tenant/tenant.middleware';
+import { TenantDbModule } from './db/tenant-db.module';
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = Number(process.env.REDIS_PORT || 6379);
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    TenantDbModule,
     BullModule.forRoot({
       connection: {
         host: redisHost,

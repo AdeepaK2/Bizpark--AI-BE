@@ -4,6 +4,12 @@ export class CommerceRegisterDto {
   name!: string;
 }
 
+export class CommerceAdminRegisterDto {
+  email!: string;
+  password!: string;
+  name!: string;
+}
+
 export class CommerceLoginDto {
   email!: string;
   password!: string;
