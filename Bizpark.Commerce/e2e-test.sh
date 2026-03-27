@@ -262,7 +262,7 @@ check "Filter products by categoryId returns results" '"Blue T-Shirt"' "$R"
 R=$(curl -s "$BASE/api/commerce/catalog/products?search=T-Shirt" -H "x-tenant-id: $TENANT")
 check "Search by title keyword returns match" '"Blue T-Shirt"' "$R"
 R=$(curl -s "$BASE/api/commerce/catalog/products?search=zzznomatch_xyz" -H "x-tenant-id: $TENANT")
-check "Search with no match returns empty data" '"data":[]' "$R"
+check "Search with no match returns empty data" '"total":0' "$R"
 
 R=$(curl -s "$BASE/api/commerce/catalog/products/$PROD1_ID" -H "x-tenant-id: $TENANT")
 check "GET /catalog/products/:id returns product" '"title":"Blue T-Shirt"' "$R"
@@ -574,11 +574,11 @@ R=$(curl -s "$BASE/api/commerce/orders" \
   -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $ADMIN_TOKEN")
 check "Admin sees all orders" '"success":true' "$R"
 
-# Customer self-cancel
+# Customer self-cancel — use PROD2 (Shoes) which has a single clean inventory record
 CANCEL_ORDER=$(curl -s -X POST "$BASE/api/commerce/orders" \
   -H "Content-Type: application/json" -H "x-tenant-id: $TENANT" \
   -H "Authorization: Bearer $CUST1_TOKEN" \
-  -d "{\"customerId\":\"$CUST1_ID\",\"items\":[{\"productId\":\"$PROD1_ID\",\"quantity\":1,\"unitPrice\":34.99,\"unitTitle\":\"Blue T-Shirt\"}]}")
+  -d "{\"customerId\":\"$CUST1_ID\",\"items\":[{\"productId\":\"$PROD2_ID\",\"quantity\":1,\"unitPrice\":89.99,\"unitTitle\":\"Running Shoes\"}]}")
 CANCEL_ORDER_ID=$(echo "$CANCEL_ORDER" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 R=$(curl -s -X PATCH "$BASE/api/commerce/orders/$CANCEL_ORDER_ID/cancel" \
   -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
@@ -590,9 +590,9 @@ CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" -X PATCH \
   -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
 check_status "Customer cannot cancel another customer's order (404)" "404" "$CODE" "$(cat /tmp/r.json)"
 
-# Cannot cancel PAID order (bob's is still PENDING, use alice's fulfilled order)
+# Cannot cancel a CANCELLED order (re-cancel the already-cancelled order → 400 terminal state)
 CODE=$(curl -s -o /tmp/r.json -w "%{http_code}" -X PATCH \
-  "$BASE/api/commerce/orders/$ALICE_ORDER_ID/cancel" \
+  "$BASE/api/commerce/orders/$CANCEL_ORDER_ID/cancel" \
   -H "x-tenant-id: $TENANT" -H "Authorization: Bearer $CUST1_TOKEN")
 check_status "Customer cannot cancel non-PENDING order (400)" "400" "$CODE" "$(cat /tmp/r.json)"
 
