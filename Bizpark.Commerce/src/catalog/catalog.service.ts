@@ -9,14 +9,26 @@ export class CatalogService {
 
   async listProducts(
     tenantId: string,
-    opts: { categoryId?: string; page?: number; limit?: number } = {},
+    opts: { categoryId?: string; search?: string; page?: number; limit?: number } = {},
   ) {
     const repo = await this.repo(tenantId);
     const page = Math.max(1, opts.page ?? 1);
     const limit = Math.min(100, Math.max(1, opts.limit ?? 20));
 
-    const where: Record<string, unknown> = { deletedAt: IsNull() };
-    if (opts.categoryId) where['categoryId'] = opts.categoryId;
+    // Build WHERE — if search is provided, use two conditions (title OR description match)
+    // combined with AND deletedAt IS NULL (+ optional categoryId)
+    let where: object | object[];
+    if (opts.search) {
+      const base = { deletedAt: IsNull(), ...(opts.categoryId ? { categoryId: opts.categoryId } : {}) };
+      where = [
+        { ...base, title: ILike(`%${opts.search}%`) },
+        { ...base, description: ILike(`%${opts.search}%`) },
+      ];
+    } else {
+      const w: Record<string, unknown> = { deletedAt: IsNull() };
+      if (opts.categoryId) w['categoryId'] = opts.categoryId;
+      where = w;
+    }
 
     const [data, total] = await repo.findAndCount({
       where,
