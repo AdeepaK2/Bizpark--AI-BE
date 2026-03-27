@@ -99,14 +99,13 @@ export class OrdersService {
     await queryRunner.startTransaction();
 
     try {
-      // Lock just the orders row (FOR UPDATE) without touching the joined items relation
-      const locked = await queryRunner.manager.query(
-        `SELECT id FROM orders WHERE id = $1 FOR UPDATE`,
-        [orderId],
-      );
-      if (!locked || locked.length === 0) throw new NotFoundException('Order not found');
-
-      const order = await queryRunner.manager.findOne(OrderEntity, { where: { id: orderId } });
+      // Use QueryBuilder with pessimistic lock — avoids the eager OneToMany join
+      // that would trigger the "FOR UPDATE cannot be applied to outer join" error.
+      const order = await queryRunner.manager
+        .createQueryBuilder(OrderEntity, 'o')
+        .setLock('pessimistic_write')
+        .where('o.id = :id', { id: orderId })
+        .getOne();
       if (!order) throw new NotFoundException('Order not found');
 
       const allowed = TRANSITIONS[order.status];
@@ -116,15 +115,18 @@ export class OrdersService {
         );
       }
 
-      // Release reserved inventory when order is cancelled
-      if (status === 'CANCELLED' && order.items && order.items.length > 0) {
-        for (const item of order.items) {
-          await this.inventoryService.releaseWithLock(
-            queryRunner.manager,
-            item.productId,
-            item.quantity,
-            item.variantId,
-          );
+      // Release reserved inventory when order is cancelled (load items separately)
+      if (status === 'CANCELLED') {
+        const orderWithItems = await queryRunner.manager.findOne(OrderEntity, { where: { id: orderId } });
+        if (orderWithItems?.items?.length) {
+          for (const item of orderWithItems.items) {
+            await this.inventoryService.releaseWithLock(
+              queryRunner.manager,
+              item.productId,
+              item.quantity,
+              item.variantId,
+            );
+          }
         }
       }
 
