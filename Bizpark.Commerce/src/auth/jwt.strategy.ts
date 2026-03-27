@@ -1,7 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from './auth.service';
 
 type CommerceJwtPayload = {
   sub: string;
@@ -12,7 +11,7 @@ type CommerceJwtPayload = {
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly authService: AuthService) {
+  constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -20,12 +19,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  // Passport verifies the JWT signature before this runs — payload is trusted.
+  // Return payload fields as req.user so every handler has id, role, tenantId.
   validate(payload: CommerceJwtPayload) {
-    const user = this.authService.findById(payload.tenantId, payload.sub);
-    if (!user) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return user;
+    return { id: payload.sub, tenantId: payload.tenantId, email: payload.email, role: payload.role };
   }
 }

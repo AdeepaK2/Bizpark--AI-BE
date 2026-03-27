@@ -14,6 +14,10 @@ export class OrderEntity {
   @Column({ type: 'varchar', length: 20, default: 'PENDING' })
   status!: OrderStatus;
 
+  // Calculated total at order creation — sum of all item subtotals
+  @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
+  totalAmount!: number;
+
   @OneToMany(() => OrderItemEntity, (item) => item.order, { cascade: true, eager: true })
   items!: OrderItemEntity[];
 
