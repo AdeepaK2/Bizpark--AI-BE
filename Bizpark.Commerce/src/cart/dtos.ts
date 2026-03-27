@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddCartItemDto {
@@ -19,6 +19,13 @@ export class CheckoutBeginDto {
   @IsString()
   @IsNotEmpty()
   customerId!: string;
+}
+
+export class UpdateCartItemDto {
+  @Type(() => Number)
+  @IsInt({ message: 'quantity must be an integer' })
+  @Min(1, { message: 'quantity must be at least 1' })
+  quantity!: number;
 }
 
 export class CheckoutShippingAddressDto {

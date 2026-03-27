@@ -87,6 +87,24 @@ export class CartService {
     return cartRepo.findOne({ where: { customerId } });
   }
 
+  async updateItemQuantity(tenantId: string, customerId: string, itemId: string, quantity: number) {
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const cartRepo = ds.getRepository(CartEntity);
+    const itemRepo = ds.getRepository(CartItemEntity);
+
+    const cart = await cartRepo.findOne({ where: { customerId } });
+    if (!cart) return null;
+
+    const item = cart.items.find((i: CartItemEntity) => i.id === itemId);
+    if (!item) return cartRepo.findOne({ where: { customerId } });
+
+    const qty = Math.max(1, Number(quantity));
+    item.quantity = qty;
+    await itemRepo.save(item);
+
+    return cartRepo.findOne({ where: { customerId } });
+  }
+
   async removeItem(tenantId: string, customerId: string, itemId: string) {
     const ds = await this.tenantDb.getDataSource(tenantId);
     const cartRepo = ds.getRepository(CartEntity);
