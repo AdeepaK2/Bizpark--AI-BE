@@ -99,10 +99,14 @@ export class OrdersService {
     await queryRunner.startTransaction();
 
     try {
-      const order = await queryRunner.manager.findOne(OrderEntity, {
-        where: { id: orderId },
-        lock: { mode: 'pessimistic_write' },
-      });
+      // Lock just the orders row (FOR UPDATE) without touching the joined items relation
+      const locked = await queryRunner.manager.query(
+        `SELECT id FROM orders WHERE id = $1 FOR UPDATE`,
+        [orderId],
+      );
+      if (!locked || locked.length === 0) throw new NotFoundException('Order not found');
+
+      const order = await queryRunner.manager.findOne(OrderEntity, { where: { id: orderId } });
       if (!order) throw new NotFoundException('Order not found');
 
       const allowed = TRANSITIONS[order.status];
