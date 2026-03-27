@@ -165,8 +165,11 @@ export const completeCheckout = (
   }, token);
 
 // ── Orders ────────────────────────────────────────────────────────
-export const getOrders = (token: string, page = 1) =>
-  req<{ success: boolean } & PaginatedResponse<Order>>(`/api/commerce/orders?page=${page}`, {}, token);
+export const getOrders = (token: string, page = 1, status?: string) => {
+  const q = new URLSearchParams({ page: String(page) });
+  if (status) q.set('status', status);
+  return req<{ success: boolean } & PaginatedResponse<Order>>(`/api/commerce/orders?${q}`, {}, token);
+};
 
 export const getOrder = (id: string, token: string) =>
   req<{ success: boolean; data: Order }>(`/api/commerce/orders/${id}`, {}, token);

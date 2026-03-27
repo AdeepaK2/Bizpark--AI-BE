@@ -104,7 +104,7 @@ export default function AccountPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Email</label>
-                <input className={inputCls} value={user.email} disabled className={`${inputCls} bg-gray-50 text-gray-400 cursor-not-allowed`} />
+                <input className={`${inputCls} bg-gray-50 text-gray-400 cursor-not-allowed`} value={user.email} disabled />
                 <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
               </div>
               {profileErr && <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{profileErr}</p>}

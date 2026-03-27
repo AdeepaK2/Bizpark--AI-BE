@@ -26,6 +26,11 @@ export default function AdminConfigPage() {
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
 
+  // SEO
+  const [seoDescription, setSeoDescription] = useState('');
+  const [seoKeywords, setSeoKeywords] = useState('');
+  const [seoOgImage, setSeoOgImage] = useState('');
+
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -49,6 +54,11 @@ export default function AdminConfigPage() {
       setInstagram(c.footer.socialLinks?.instagram ?? '');
       setFacebook(c.footer.socialLinks?.facebook ?? '');
     }
+    if (c?.seo) {
+      setSeoDescription(c.seo.metaDescription ?? '');
+      setSeoKeywords(c.seo.keywords ?? '');
+      setSeoOgImage(c.seo.ogImageUrl ?? '');
+    }
   }, [config]);
 
   const handleSave = async () => {
@@ -66,6 +76,11 @@ export default function AdminConfigPage() {
             instagram: instagram || undefined,
             facebook: facebook || undefined,
           },
+        },
+        seo: {
+          metaDescription: seoDescription || undefined,
+          keywords: seoKeywords || undefined,
+          ogImageUrl: seoOgImage || undefined,
         },
       };
       await updateWebsiteConfig(token, {
@@ -214,6 +229,20 @@ export default function AdminConfigPage() {
               <input className={inputCls} value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="yourstore" />
             </Field>
           </div>
+        </Section>
+
+        {/* SEO */}
+        <Section title="SEO & Meta Tags">
+          <Field label="Meta Description" note="(shown in Google search results)">
+            <textarea className={inputCls} rows={2} value={seoDescription} onChange={e => setSeoDescription(e.target.value)} placeholder="A short description of your store for search engines..." maxLength={160} />
+            <p className="text-xs text-gray-400 mt-1">{seoDescription.length}/160 characters</p>
+          </Field>
+          <Field label="Keywords" note="(comma-separated, optional)">
+            <input className={inputCls} value={seoKeywords} onChange={e => setSeoKeywords(e.target.value)} placeholder="sneakers, shoes, footwear" />
+          </Field>
+          <Field label="OG Image URL" note="(shown when shared on social media, optional)">
+            <input className={inputCls} value={seoOgImage} onChange={e => setSeoOgImage(e.target.value)} placeholder="https://..." />
+          </Field>
         </Section>
       </div>
 

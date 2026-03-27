@@ -29,12 +29,12 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     if (!token) return;
     setLoading(true);
-    getOrders(token, page).then(r => {
+    getOrders(token, page, statusFilter || undefined).then(r => {
       setOrders(r.data); setTotalPages(r.totalPages); setTotal(r.total);
     }).finally(() => setLoading(false));
-  }, [token, page]);
+  }, [token, page, statusFilter]);
 
-  const filtered = statusFilter ? orders.filter(o => o.status === statusFilter) : orders;
+  const filtered = orders;
 
   return (
     <div>
@@ -45,7 +45,7 @@ export default function AdminOrdersPage() {
         </div>
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
           className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
         >
           <option value="">All statuses</option>
