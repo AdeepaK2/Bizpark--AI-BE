@@ -29,7 +29,13 @@ export class CheckoutService {
     };
   }
 
-  async completeCheckout(tenantId: string, payload: { customerId: string }) {
+  async completeCheckout(tenantId: string, payload: {
+    customerId: string;
+    shippingAddress?: {
+      name: string; line1: string; line2?: string;
+      city: string; state?: string; postalCode: string; country: string;
+    } | null;
+  }) {
     const cart = await this.cartService.getCart(tenantId, payload.customerId);
 
     if (!cart.items || cart.items.length === 0) {
@@ -62,8 +68,21 @@ export class CheckoutService {
       const orderRepo = queryRunner.manager.getRepository(OrderEntity);
       const itemRepo = queryRunner.manager.getRepository(OrderItemEntity);
 
+      const addr = payload.shippingAddress ?? null;
       const order = await orderRepo.save(
-        orderRepo.create({ customerId: payload.customerId, status: 'PENDING', totalAmount, items: [] }),
+        orderRepo.create({
+          customerId: payload.customerId,
+          status: 'PENDING',
+          totalAmount,
+          items: [],
+          shippingName: addr?.name ?? null,
+          shippingLine1: addr?.line1 ?? null,
+          shippingLine2: addr?.line2 ?? null,
+          shippingCity: addr?.city ?? null,
+          shippingState: addr?.state ?? null,
+          shippingPostalCode: addr?.postalCode ?? null,
+          shippingCountry: addr?.country ?? null,
+        }),
       );
 
       // 4. Create order items

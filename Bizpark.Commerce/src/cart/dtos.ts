@@ -21,8 +21,21 @@ export class CheckoutBeginDto {
   customerId!: string;
 }
 
+export class CheckoutShippingAddressDto {
+  @IsString() @IsNotEmpty() name!: string;
+  @IsString() @IsNotEmpty() line1!: string;
+  @IsOptional() @IsString() line2?: string;
+  @IsString() @IsNotEmpty() city!: string;
+  @IsOptional() @IsString() state?: string;
+  @IsString() @IsNotEmpty() postalCode!: string;
+  @IsString() @IsNotEmpty() country!: string;
+}
+
 export class CheckoutCompleteDto {
   @IsString()
   @IsNotEmpty()
   customerId!: string;
+
+  @IsOptional()
+  shippingAddress?: CheckoutShippingAddressDto;
 }

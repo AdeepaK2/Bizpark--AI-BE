@@ -11,6 +11,11 @@ type OrderItemInput = {
   unitTitle?: string;
 };
 
+type ShippingAddress = {
+  name: string; line1: string; line2?: string;
+  city: string; state?: string; postalCode: string; country: string;
+};
+
 // Valid status transitions: from → allowed nexts
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ['PAID', 'CANCELLED'],
@@ -54,7 +59,7 @@ export class OrdersService {
     return order;
   }
 
-  async create(tenantId: string, payload: { customerId: string; items: OrderItemInput[] }) {
+  async create(tenantId: string, payload: { customerId: string; items: OrderItemInput[]; shippingAddress?: ShippingAddress | null }) {
     const ds = await this.tenantDb.getDataSource(tenantId);
     const orderRepo = ds.getRepository(OrderEntity);
     const itemRepo = ds.getRepository(OrderItemEntity);
@@ -71,8 +76,21 @@ export class OrdersService {
       return sum + Number(i.unitPrice ?? 0) * i.quantity;
     }, 0);
 
+    const addr = payload.shippingAddress ?? null;
     const order = await orderRepo.save(
-      orderRepo.create({ customerId: payload.customerId, status: 'PENDING', totalAmount, items: [] }),
+      orderRepo.create({
+        customerId: payload.customerId,
+        status: 'PENDING',
+        totalAmount,
+        items: [],
+        shippingName: addr?.name ?? null,
+        shippingLine1: addr?.line1 ?? null,
+        shippingLine2: addr?.line2 ?? null,
+        shippingCity: addr?.city ?? null,
+        shippingState: addr?.state ?? null,
+        shippingPostalCode: addr?.postalCode ?? null,
+        shippingCountry: addr?.country ?? null,
+      }),
     );
 
     const items = payload.items.map((i) =>
