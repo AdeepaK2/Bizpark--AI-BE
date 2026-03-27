@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 /**
  * Flexible content sections — agent updates these via PATCH /api/commerce/website-config
@@ -87,6 +87,9 @@ export class WebsiteConfigEntity {
   // All page sections live here — agent calls PATCH with any subset
   @Column({ type: 'jsonb', nullable: true })
   content!: WebsiteConfigContent | null;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;

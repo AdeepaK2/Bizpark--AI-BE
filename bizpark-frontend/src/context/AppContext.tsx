@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { AuthUser, Cart, WebsiteConfig } from '@/types';
-import { getCart, getMe, getWebsiteConfig } from '@/lib/api';
+import { getCart, getMe } from '@/lib/api';
 
 interface AppState {
   config: WebsiteConfig | null;

@@ -12,9 +12,13 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const res = await getWebsiteConfig();
+    const cfg = res.data;
+    const seo = cfg?.content?.seo;
     return {
-      title: res.data?.businessName ?? 'BizStore',
-      description: res.data?.tagline ?? 'Your online store',
+      title: cfg?.businessName ?? 'BizStore',
+      description: seo?.metaDescription ?? cfg?.tagline ?? 'Your online store',
+      keywords: seo?.keywords ?? undefined,
+      openGraph: seo?.ogImageUrl ? { images: [seo.ogImageUrl] } : undefined,
     };
   } catch {
     return { title: 'BizStore', description: 'Your online store' };
