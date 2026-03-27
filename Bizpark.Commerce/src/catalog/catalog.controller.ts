@@ -14,6 +14,7 @@ export class CatalogController {
   async listProducts(
     @TenantId() tenantId: string,
     @Query('categoryId') categoryId?: string,
+    @Query('search') search?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
@@ -21,6 +22,7 @@ export class CatalogController {
       success: true,
       ...(await this.catalogService.listProducts(tenantId, {
         categoryId,
+        search: search?.trim() || undefined,
         page: parseInt(page, 10) || 1,
         limit: parseInt(limit, 10) || 20,
       })),
