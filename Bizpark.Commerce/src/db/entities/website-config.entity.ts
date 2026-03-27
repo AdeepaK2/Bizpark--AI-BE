@@ -41,7 +41,6 @@ export interface WebsiteConfigContent {
     policies?: {
       returns?: string;
       shipping?: string;
-      privacy?: string;
     };
   };
   seo?: {
