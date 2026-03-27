@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IsNull } from 'typeorm';
+import { ILike, IsNull } from 'typeorm';
 import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
 import { ProductEntity } from '../db/entities';
 

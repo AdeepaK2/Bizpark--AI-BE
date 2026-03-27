@@ -42,6 +42,21 @@ export class OrdersController {
     return { success: true, data: order };
   }
 
+  // Customer cancels their own PENDING order
+  @Patch(':id/cancel')
+  async cancelOrder(
+    @TenantId() tenantId: string,
+    @Param('id') orderId: string,
+    @CurrentUser() user: JwtUser,
+  ) {
+    // Admin can cancel any order via this endpoint too
+    const customerId = user.role === 'ADMIN' ? undefined : user.id;
+    if (customerId) {
+      return { success: true, data: await this.ordersService.cancelByCustomer(tenantId, orderId, customerId) };
+    }
+    return { success: true, data: await this.ordersService.updateStatus(tenantId, orderId, 'CANCELLED') };
+  }
+
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
