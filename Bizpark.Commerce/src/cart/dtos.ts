@@ -1,9 +1,13 @@
-import { IsInt, IsNotEmpty, IsString, IsUUID, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class AddCartItemDto {
   @IsUUID('4', { message: 'productId must be a valid UUID' })
   productId!: string;
+
+  @IsOptional()
+  @IsUUID('4', { message: 'variantId must be a valid UUID' })
+  variantId?: string | null;
 
   @Type(() => Number)
   @IsInt({ message: 'quantity must be an integer' })

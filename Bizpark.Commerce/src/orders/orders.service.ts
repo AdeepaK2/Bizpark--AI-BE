@@ -5,6 +5,7 @@ import { OrderEntity, OrderItemEntity, OrderStatus } from '../db/entities';
 
 type OrderItemInput = {
   productId: string;
+  variantId?: string | null;
   quantity: number;
   unitPrice?: number;
   unitTitle?: string;
@@ -25,14 +26,25 @@ export class OrdersService {
     private readonly inventoryService: InventoryService,
   ) {}
 
-  async list(tenantId: string) {
+  async list(tenantId: string, page = 1, limit = 20) {
     const repo = await this.repo(tenantId);
-    return repo.find({ order: { createdAt: 'DESC' } });
+    const [data, total] = await repo.findAndCount({
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async listByCustomer(tenantId: string, customerId: string) {
+  async listByCustomer(tenantId: string, customerId: string, page = 1, limit = 20) {
     const repo = await this.repo(tenantId);
-    return repo.find({ where: { customerId }, order: { createdAt: 'DESC' } });
+    const [data, total] = await repo.findAndCount({
+      where: { customerId },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
   async getById(tenantId: string, orderId: string) {
@@ -47,9 +59,16 @@ export class OrdersService {
     const orderRepo = ds.getRepository(OrderEntity);
     const itemRepo = ds.getRepository(OrderItemEntity);
 
+    // Reserve inventory for each item (non-transactional path — direct order creation)
+    for (const item of payload.items) {
+      const result = await this.inventoryService.reserveByProductId(tenantId, item.productId, item.quantity);
+      if (!result.success) {
+        throw new BadRequestException(result.message || `Insufficient stock for product ${item.productId}`);
+      }
+    }
+
     const totalAmount = payload.items.reduce((sum, i) => {
-      const price = Number(i.unitPrice ?? 0);
-      return sum + price * i.quantity;
+      return sum + Number(i.unitPrice ?? 0) * i.quantity;
     }, 0);
 
     const order = await orderRepo.save(
@@ -59,6 +78,7 @@ export class OrdersService {
     const items = payload.items.map((i) =>
       itemRepo.create({
         productId: i.productId,
+        variantId: i.variantId ?? null,
         quantity: i.quantity,
         unitPrice: Number(i.unitPrice ?? 0),
         unitTitle: i.unitTitle ?? '',
@@ -72,26 +92,49 @@ export class OrdersService {
   }
 
   async updateStatus(tenantId: string, orderId: string, status: OrderStatus) {
-    const repo = await this.repo(tenantId);
-    const order = await repo.findOne({ where: { id: orderId } });
-    if (!order) throw new NotFoundException('Order not found');
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const repo = ds.getRepository(OrderEntity);
+    const queryRunner = ds.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const allowed = TRANSITIONS[order.status];
-    if (!allowed.includes(status)) {
-      throw new BadRequestException(
-        `Cannot transition order from ${order.status} to ${status}. Allowed: ${allowed.length ? allowed.join(', ') : 'none (terminal state)'}`,
-      );
-    }
+    try {
+      const order = await queryRunner.manager.findOne(OrderEntity, {
+        where: { id: orderId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!order) throw new NotFoundException('Order not found');
 
-    // Release reserved inventory when order is cancelled
-    if (status === 'CANCELLED' && order.items && order.items.length > 0) {
-      for (const item of order.items) {
-        await this.inventoryService.releaseByProductId(tenantId, item.productId, item.quantity);
+      const allowed = TRANSITIONS[order.status];
+      if (!allowed.includes(status)) {
+        throw new BadRequestException(
+          `Cannot transition from ${order.status} to ${status}. Allowed: ${allowed.length ? allowed.join(', ') : 'none (terminal state)'}`,
+        );
       }
-    }
 
-    order.status = status;
-    return repo.save(order);
+      // Release reserved inventory when order is cancelled
+      if (status === 'CANCELLED' && order.items && order.items.length > 0) {
+        for (const item of order.items) {
+          await this.inventoryService.releaseWithLock(
+            queryRunner.manager,
+            item.productId,
+            item.quantity,
+            item.variantId,
+          );
+        }
+      }
+
+      order.status = status;
+      await queryRunner.manager.save(OrderEntity, order);
+      await queryRunner.commitTransaction();
+
+      return repo.findOne({ where: { id: orderId } });
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async repo(tenantId: string) {

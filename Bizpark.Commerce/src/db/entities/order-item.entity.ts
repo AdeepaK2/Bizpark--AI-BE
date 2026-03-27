@@ -9,6 +9,10 @@ export class OrderItemEntity {
   @Column({ type: 'uuid' })
   productId!: string;
 
+  // null = no variant
+  @Column({ type: 'uuid', nullable: true })
+  variantId!: string | null;
+
   @Column({ type: 'int', default: 1 })
   quantity!: number;
 

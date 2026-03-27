@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -14,18 +14,21 @@ type JwtUser = { id: string; tenantId: string; email: string; role: string };
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  // Role-aware list:
-  //   ADMIN  → all orders for the tenant
-  //   CUSTOMER → only their own orders
   @Get()
-  async list(@TenantId() tenantId: string, @CurrentUser() user: JwtUser) {
+  async list(
+    @TenantId() tenantId: string,
+    @CurrentUser() user: JwtUser,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    const p = Math.max(1, parseInt(page, 10) || 1);
+    const l = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
     if (user.role === 'ADMIN') {
-      return { success: true, data: await this.ordersService.list(tenantId) };
+      return { success: true, ...(await this.ordersService.list(tenantId, p, l)) };
     }
-    return { success: true, data: await this.ordersService.listByCustomer(tenantId, user.id) };
+    return { success: true, ...(await this.ordersService.listByCustomer(tenantId, user.id, p, l)) };
   }
 
-  // Any authenticated user can fetch an order — but customers only see their own
   @Get(':id')
   async getOne(
     @TenantId() tenantId: string,
@@ -39,7 +42,6 @@ export class OrdersController {
     return { success: true, data: order };
   }
 
-  // ADMIN only — update order status (PENDING → PAID → FULFILLED | CANCELLED)
   @Patch(':id/status')
   @UseGuards(RolesGuard)
   @Roles('ADMIN')
@@ -51,14 +53,12 @@ export class OrdersController {
     return { success: true, data: await this.ordersService.updateStatus(tenantId, orderId, dto.status) };
   }
 
-  // JWT required — customer places order (customerId must match their own JWT id)
   @Post()
   async create(
     @TenantId() tenantId: string,
     @CurrentUser() user: JwtUser,
     @Body() dto: CreateOrderDto,
   ) {
-    // Customers can only create orders for themselves
     if (user.role !== 'ADMIN' && dto.customerId !== user.id) {
       throw new ForbiddenException('Cannot create an order for another customer');
     }

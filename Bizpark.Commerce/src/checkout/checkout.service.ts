@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CartService } from '../cart/cart.service';
-import { OrdersService } from '../orders/orders.service';
 import { InventoryService } from '../inventory/inventory.service';
+import { TenantDataSourceFactory } from '../db/tenant-datasource.factory';
+import { CartEntity, CartItemEntity, OrderEntity, OrderItemEntity } from '../db/entities';
 
 @Injectable()
 export class CheckoutService {
   constructor(
     private readonly cartService: CartService,
-    private readonly ordersService: OrdersService,
     private readonly inventoryService: InventoryService,
+    private readonly tenantDb: TenantDataSourceFactory,
   ) {}
 
   async beginCheckout(tenantId: string, payload: { customerId: string }) {
@@ -35,27 +36,68 @@ export class CheckoutService {
       throw new BadRequestException('Cart is empty — nothing to checkout');
     }
 
-    // Reserve inventory for every item before creating the order
-    for (const item of cart.items) {
-      const result = await this.inventoryService.reserveByProductId(tenantId, item.productId, item.quantity);
-      if (!result.success) {
-        throw new BadRequestException(result.message || `Insufficient stock for product ${item.productId}`);
+    const ds = await this.tenantDb.getDataSource(tenantId);
+    const queryRunner = ds.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Reserve inventory with pessimistic lock (prevents race conditions)
+      for (const item of cart.items) {
+        const result = await this.inventoryService.reserveWithLock(
+          queryRunner.manager,
+          item.productId,
+          item.quantity,
+          item.variantId,
+        );
+        if (!result.success) {
+          throw new BadRequestException(result.message || `Insufficient stock for product ${item.productId}`);
+        }
       }
+
+      // 2. Calculate total
+      const totalAmount = cart.items.reduce((sum, i) => sum + Number(i.unitPrice ?? 0) * i.quantity, 0);
+
+      // 3. Create order
+      const orderRepo = queryRunner.manager.getRepository(OrderEntity);
+      const itemRepo = queryRunner.manager.getRepository(OrderItemEntity);
+
+      const order = await orderRepo.save(
+        orderRepo.create({ customerId: payload.customerId, status: 'PENDING', totalAmount, items: [] }),
+      );
+
+      // 4. Create order items
+      const orderItems = cart.items.map((i) =>
+        itemRepo.create({
+          productId: i.productId,
+          variantId: i.variantId ?? null,
+          quantity: i.quantity,
+          unitPrice: Number(i.unitPrice ?? 0),
+          unitTitle: i.unitTitle ?? '',
+          subtotal: Number(i.unitPrice ?? 0) * i.quantity,
+          order,
+        }),
+      );
+      await itemRepo.save(orderItems);
+
+      // 5. Clear cart
+      const cartRepo = queryRunner.manager.getRepository(CartEntity);
+      const cartItemRepo = queryRunner.manager.getRepository(CartItemEntity);
+      const freshCart = await cartRepo.findOne({ where: { customerId: payload.customerId } });
+      if (freshCart && freshCart.items.length > 0) {
+        await cartItemRepo.remove(freshCart.items);
+      }
+
+      await queryRunner.commitTransaction();
+
+      const savedOrder = await ds.getRepository(OrderEntity).findOne({ where: { id: order.id } });
+      return { success: true, order: savedOrder };
+
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    // Pass price + title snapshots from cart items so order records are accurate
-    const order = await this.ordersService.create(tenantId, {
-      customerId: payload.customerId,
-      items: cart.items.map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        unitPrice: Number(i.unitPrice ?? 0),
-        unitTitle: i.unitTitle ?? '',
-      })),
-    });
-
-    await this.cartService.clearCart(tenantId, payload.customerId);
-
-    return { success: true, order };
   }
 }

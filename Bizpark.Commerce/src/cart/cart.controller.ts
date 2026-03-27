@@ -7,7 +7,6 @@ import { AddCartItemDto } from './dtos';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
-// Ownership helper — customers can only touch their own cart; admins can touch any
 function assertCartAccess(user: JwtUser, customerId: string) {
   if (user.role !== 'ADMIN' && user.id !== customerId) {
     throw new ForbiddenException('Access denied: not your cart');
@@ -40,14 +39,15 @@ export class CartController {
     return { success: true, data: await this.cartService.addItem(tenantId, customerId, dto) };
   }
 
-  @Delete(':customerId/items/:productId')
+  // Remove by cart item ID (supports multiple variants of same product)
+  @Delete(':customerId/items/:itemId')
   async removeItem(
     @TenantId() tenantId: string,
     @Param('customerId') customerId: string,
-    @Param('productId') productId: string,
+    @Param('itemId') itemId: string,
     @CurrentUser() user: JwtUser,
   ) {
     assertCartAccess(user, customerId);
-    return { success: true, data: await this.cartService.removeItem(tenantId, customerId, productId) };
+    return { success: true, data: await this.cartService.removeItem(tenantId, customerId, itemId) };
   }
 }
