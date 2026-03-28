@@ -28,6 +28,9 @@ export default function Navbar() {
               <>
                 <Link href="/orders" className="hover:text-gray-900 transition-colors">Orders</Link>
                 <Link href="/account" className="hover:text-gray-900 transition-colors">Account</Link>
+                {user.role === 'ADMIN' && (
+                  <Link href="/admin" className="hover:text-gray-900 transition-colors font-semibold text-primary">Admin</Link>
+                )}
                 <span className="text-gray-300">|</span>
                 <span className="text-gray-500 text-xs">{user.name}</span>
                 <button onClick={logout} className="text-red-500 hover:text-red-700 transition-colors">Logout</button>
@@ -74,6 +77,9 @@ export default function Navbar() {
             <>
               <Link href="/orders" className="block py-2 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Orders</Link>
               <Link href="/account" className="block py-2 hover:text-gray-900" onClick={() => setMenuOpen(false)}>Account</Link>
+              {user.role === 'ADMIN' && (
+                <Link href="/admin" className="block py-2 font-semibold text-primary" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
+              )}
               <div className="py-2 text-xs text-gray-400">{user.name}</div>
               <button
                 onClick={() => { logout(); setMenuOpen(false); }}

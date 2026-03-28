@@ -34,6 +34,7 @@ export default function CheckoutPage() {
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n);
 
+  if (user === undefined) return null; // still hydrating
   if (!user || !token) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 gap-4">
@@ -160,7 +161,7 @@ export default function CheckoutPage() {
             {cart.items.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span className="text-gray-600 flex-1 pr-2 line-clamp-1">{item.unitTitle} × {item.quantity}</span>
-                <span className="font-medium text-gray-900 flex-shrink-0">{fmt(item.unitPrice * item.quantity)}</span>
+                <span className="font-medium text-gray-900 shrink-0">{fmt(item.unitPrice * item.quantity)}</span>
               </div>
             ))}
             <div className="border-t pt-3 space-y-2">

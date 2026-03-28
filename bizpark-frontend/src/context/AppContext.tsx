@@ -6,7 +6,7 @@ import { getCart, getMe } from '@/lib/api';
 
 interface AppState {
   config: WebsiteConfig | null;
-  user: AuthUser | null;
+  user: AuthUser | null | undefined; // undefined = still hydrating from localStorage
   token: string | null;
   cart: Cart | null;
   cartCount: number;
@@ -16,17 +16,17 @@ interface AppState {
 }
 
 const AppContext = createContext<AppState>({
-  config: null, user: null, token: null, cart: null, cartCount: 0,
+  config: null, user: undefined, token: null, cart: null, cartCount: 0,
   login: () => {}, logout: () => {}, refreshCart: async () => {},
 });
 
 export function AppProvider({ children, initialConfig }: { children: React.ReactNode; initialConfig: WebsiteConfig | null }) {
   const [config] = useState<WebsiteConfig | null>(initialConfig);
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null | undefined>(undefined); // undefined until hydrated
   const [token, setToken] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
 
-  // Restore session from localStorage
+  // Restore session from localStorage — settles user to null (guest) or AuthUser (logged in)
   useEffect(() => {
     const stored = localStorage.getItem('biz_token');
     const storedUser = localStorage.getItem('biz_user');
@@ -35,15 +35,18 @@ export function AppProvider({ children, initialConfig }: { children: React.React
         const parsedUser = JSON.parse(storedUser) as AuthUser;
         setToken(stored);
         setUser(parsedUser);
+        return;
       } catch {
         localStorage.removeItem('biz_token');
         localStorage.removeItem('biz_user');
       }
     }
+    setUser(null); // confirmed not logged in
   }, []);
 
-  // Load cart when user is set
+  // Load cart when user is set (skip while hydrating)
   useEffect(() => {
+    if (user === undefined) return;
     if (user && token) refreshCart();
     else setCart(null);
   }, [user, token]); // eslint-disable-line react-hooks/exhaustive-deps

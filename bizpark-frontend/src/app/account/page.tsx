@@ -27,6 +27,7 @@ export default function AccountPage() {
   const [pwMsg, setPwMsg] = useState('');
   const [pwErr, setPwErr] = useState('');
 
+  if (user === undefined) return null; // still hydrating
   if (!user || !token) {
     router.replace('/auth');
     return null;

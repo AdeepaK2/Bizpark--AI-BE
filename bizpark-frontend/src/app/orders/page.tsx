@@ -34,6 +34,7 @@ export default function OrdersPage() {
       .finally(() => setLoading(false));
   }, [token, page]);
 
+  if (user === undefined) return null; // still hydrating
   if (!user || !token) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 gap-4">
@@ -76,7 +77,7 @@ export default function OrdersPage() {
                 {order.status}
               </span>
               <p className="font-bold text-gray-900 w-24 text-right">{fmt(order.totalAmount)}</p>
-              <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
               </svg>
             </Link>

@@ -32,6 +32,7 @@ export default function OrderDetailPage() {
     getOrder(id, token).then(r => setOrder(r.data)).catch(() => router.push('/orders'));
   }, [id, token, router]);
 
+  if (user === undefined) return null; // still hydrating
   if (!user || !token) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 gap-4">

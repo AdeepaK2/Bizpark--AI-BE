@@ -22,14 +22,17 @@ export default function AuthPage() {
     setError('');
     setLoading(true);
     try {
+      let loggedInUser;
       if (mode === 'login') {
         const res = await apiLogin(email, password);
         login(res.access_token, res.user);
+        loggedInUser = res.user;
       } else {
         const res = await apiRegister(email, password, name);
         login(res.access_token, res.user);
+        loggedInUser = res.user;
       }
-      router.push('/');
+      router.push(loggedInUser.role === 'ADMIN' ? '/admin' : '/');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Authentication failed');
     } finally {

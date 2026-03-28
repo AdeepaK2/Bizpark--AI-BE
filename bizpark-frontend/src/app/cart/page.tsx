@@ -15,6 +15,7 @@ export default function CartPage() {
 
   const fmt = (n: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n);
 
+  if (user === undefined) return null; // still hydrating
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 gap-4">
@@ -65,7 +66,7 @@ export default function CartPage() {
         {cart.items.map(item => (
           <div key={item.id} className="flex items-center gap-4 bg-white border rounded-xl p-4">
             {/* Item image placeholder */}
-            <div className="w-16 h-16 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: `${primary}10` }}>
+            <div className="w-16 h-16 rounded-lg shrink-0 flex items-center justify-center" style={{ backgroundColor: `${primary}10` }}>
               <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
               </svg>
