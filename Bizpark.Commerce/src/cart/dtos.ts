@@ -44,5 +44,7 @@ export class CheckoutCompleteDto {
   customerId!: string;
 
   @IsOptional()
+  @ValidateNested()
+  @Type(() => CheckoutShippingAddressDto)
   shippingAddress?: CheckoutShippingAddressDto;
 }

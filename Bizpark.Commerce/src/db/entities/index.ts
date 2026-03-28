@@ -13,6 +13,8 @@ export { ProductVariantEntity } from './product-variant.entity';
 export { ShippingMethodEntity } from './shipping-method.entity';
 export { SubscriptionEntity } from './subscription.entity';
 export type { SubscriptionStatus } from './subscription.entity';
+export { WebsiteConfigEntity } from './website-config.entity';
+export type { WebsiteConfigContent } from './website-config.entity';
 
 import { CartEntity } from './cart.entity';
 import { CartItemEntity } from './cart-item.entity';
@@ -26,6 +28,7 @@ import { ProductEntity } from './product.entity';
 import { ProductVariantEntity } from './product-variant.entity';
 import { ShippingMethodEntity } from './shipping-method.entity';
 import { SubscriptionEntity } from './subscription.entity';
+import { WebsiteConfigEntity } from './website-config.entity';
 
 export const COMMERCE_ENTITIES = [
   CommerceUserEntity,
@@ -40,4 +43,5 @@ export const COMMERCE_ENTITIES = [
   OrderItemEntity,
   ShippingMethodEntity,
   SubscriptionEntity,
+  WebsiteConfigEntity,
 ];
