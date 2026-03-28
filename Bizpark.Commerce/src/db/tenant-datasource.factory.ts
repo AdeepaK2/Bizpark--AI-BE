@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { Pool } from 'pg';
+import { Client } from 'pg';
 import { COMMERCE_ENTITIES } from './entities';
 
 @Injectable()
@@ -68,13 +68,14 @@ export class TenantDataSourceFactory implements OnModuleDestroy {
    * This is a lightweight operation (no-op if schema already exists).
    */
   private async ensureSchemaExists(schema: string): Promise<void> {
-    const pool = new Pool({ connectionString: this.dbUrl, max: 1 });
+    const client = new Client({ connectionString: this.dbUrl });
+    await client.connect();
     try {
-      await pool.query(
+      await client.query(
         `CREATE SCHEMA IF NOT EXISTS "${schema.replaceAll('"', '""')}"`,
       );
     } finally {
-      await pool.end();
+      await client.end();
     }
   }
 

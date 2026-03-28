@@ -4,6 +4,24 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
+// Suppress TypeORM + pg@8 synchronize deprecation warning.
+// TypeORM 0.3.x fires concurrent client.query() calls during schema sync.
+// Harmless — does not affect query correctness. Remove when migrating to TypeORM migrations.
+process.on('warning', (w) => {
+  if (w.message?.includes('client.query()')) {
+    // absorbed — suppress default stderr output for this known warning
+  }
+});
+// Override emit to prevent the default warning handler from printing it
+const _originalEmit = process.emit;
+process.emit = function (event: string, ...args: unknown[]): boolean {
+  if (event === 'warning' && (args[0] as Error)?.message?.includes('client.query()')) {
+    return false;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (_originalEmit as any).call(process, event, ...args);
+} as typeof process.emit;
+
 async function bootstrap() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'commerce-secret-change-me') {
     console.warn('\n⚠️  WARNING: JWT_SECRET is not set or is using the insecure default.\n   Set JWT_SECRET in your .env file before deploying to production.\n');
