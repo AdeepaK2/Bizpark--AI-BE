@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Product } from '@/types';
 import { useApp } from '@/context/AppContext';
 import { addToCart } from '@/lib/api';
@@ -13,6 +14,7 @@ interface Props {
 
 export default function ProductCard({ product, currency = 'USD' }: Props) {
   const { config, user, token, refreshCart } = useApp();
+  const router = useRouter();
   const primary = config?.primaryColor ?? '#2563eb';
   const [adding, setAdding] = useState(false);
 
@@ -23,7 +25,7 @@ export default function ProductCard({ product, currency = 'USD' }: Props) {
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!user || !token) {
-      window.location.href = '/auth';
+      router.push('/auth');
       return;
     }
     setAdding(true);
