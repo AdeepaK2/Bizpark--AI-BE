@@ -55,7 +55,7 @@ export default function AdminCategoriesPage() {
     catch (e: unknown) { alert(e instanceof Error ? e.message : 'Delete failed'); }
   };
 
-  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 bg-white';
+  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 bg-white';
 
   return (
     <div>
@@ -81,7 +81,7 @@ export default function AdminCategoriesPage() {
               {categories.map(c => (
                 <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
                   <td className="px-5 py-3 font-medium text-gray-900">{c.name}</td>
-                  <td className="px-5 py-3 text-gray-400 text-xs font-mono hidden sm:table-cell">{c.slug}</td>
+                  <td className="px-5 py-3 text-gray-500 text-xs font-mono hidden sm:table-cell">{c.slug}</td>
                   <td className="px-5 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                       {c.isActive ? 'Active' : 'Inactive'}

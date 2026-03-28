@@ -67,7 +67,7 @@ export default function AccountPage() {
     }
   };
 
-  const inputCls = 'w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 bg-white';
+  const inputCls = 'w-full border rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 bg-white';
   const tabCls = (t: string) => `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${tab === t ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`;
 
   return (

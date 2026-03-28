@@ -60,7 +60,7 @@ export default function AdminShippingPage() {
   const fmt = (n: number, currency: string) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n);
 
-  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 bg-white';
+  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 bg-white';
 
   return (
     <div>

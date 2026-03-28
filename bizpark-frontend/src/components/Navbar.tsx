@@ -80,7 +80,7 @@ export default function Navbar() {
               {user.role === 'ADMIN' && (
                 <Link href="/admin" className="block py-2 font-semibold text-primary" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
               )}
-              <div className="py-2 text-xs text-gray-400">{user.name}</div>
+              <div className="py-2 text-xs text-gray-500">{user.name}</div>
               <button
                 onClick={() => { logout(); setMenuOpen(false); }}
                 className="block w-full text-left py-2 text-red-500 hover:text-red-700"

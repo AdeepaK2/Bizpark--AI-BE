@@ -101,7 +101,7 @@ export default function AdminConfigPage() {
     }
   };
 
-  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 bg-white';
+  const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 bg-white';
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <div className="bg-white border rounded-xl p-6">
       <h2 className="font-semibold text-gray-900 mb-5 pb-3 border-b">{title}</h2>

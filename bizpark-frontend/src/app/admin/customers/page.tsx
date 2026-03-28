@@ -33,7 +33,7 @@ export default function AdminCustomersPage() {
           <p className="text-sm text-gray-500 mt-0.5">{customers.length} registered</p>
         </div>
         <input
-          className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 w-56 bg-white"
+          className="border rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 w-56 bg-white"
           placeholder="Search by name or email..."
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -65,7 +65,7 @@ export default function AdminCustomersPage() {
                       {c.role}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-gray-400 text-xs hidden md:table-cell">
+                  <td className="px-5 py-3 text-gray-500 text-xs hidden md:table-cell">
                     {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}
                   </td>
                 </tr>

@@ -54,13 +54,13 @@ export default function ShopPage() {
           placeholder="Search products..."
           value={search}
           onChange={e => handleSearch(e.target.value)}
-          className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2"
+          className="flex-1 border rounded-lg px-4 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2"
           style={{ '--tw-ring-color': primary } as React.CSSProperties}
         />
         <select
           value={categoryId}
           onChange={e => handleCategory(e.target.value)}
-          className="border rounded-lg px-4 py-2 text-sm bg-white focus:outline-none"
+          className="border rounded-lg px-4 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2"
         >
           <option value="">All Categories</option>
           {flattenCategories(categories).map(c => (

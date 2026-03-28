@@ -46,7 +46,7 @@ export default function AdminOrdersPage() {
         <select
           value={statusFilter}
           onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
-          className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none"
+          className="border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2"
         >
           <option value="">All statuses</option>
           {['PENDING', 'PAID', 'FULFILLED', 'CANCELLED'].map(s => (
@@ -76,7 +76,7 @@ export default function AdminOrdersPage() {
                 <tr key={o.id} className="border-b last:border-0 hover:bg-gray-50">
                   <td className="px-5 py-3">
                     <p className="font-medium text-gray-900">#{o.id.slice(0, 8).toUpperCase()}</p>
-                    <p className="text-xs text-gray-400">{o.items.length} item{o.items.length !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-gray-500">{o.items.length} item{o.items.length !== 1 ? 's' : ''}</p>
                   </td>
                   <td className="px-5 py-3 text-gray-500 hidden md:table-cell">{new Date(o.createdAt).toLocaleDateString()}</td>
                   <td className="px-5 py-3">

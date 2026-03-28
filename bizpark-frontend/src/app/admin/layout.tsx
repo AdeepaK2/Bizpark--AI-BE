@@ -57,7 +57,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
         <div className="px-4 py-4 border-t">
-          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+          <p className="text-xs text-gray-500 truncate">{user.email}</p>
           <Link href="/" className="text-xs text-gray-500 hover:text-gray-700 mt-1 block">← Back to store</Link>
         </div>
       </aside>
