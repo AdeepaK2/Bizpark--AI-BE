@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+// Note: availableQuantity has no @Min — service clamps negatives to 0 intentionally
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -11,8 +12,8 @@ export class UpsertInventoryDto {
   @IsString() @IsNotEmpty()
   sku!: string;
 
-  @ApiProperty({ example: 100 })
-  @Type(() => Number) @IsNumber() @Min(0)
+  @ApiProperty({ example: 100, description: 'Negative values are clamped to 0 by the service' })
+  @Type(() => Number) @IsNumber()
   availableQuantity!: number;
 
   @ApiPropertyOptional({ example: 5 })
