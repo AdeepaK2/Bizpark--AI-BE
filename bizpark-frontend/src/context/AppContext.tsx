@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { AuthUser, Cart, WebsiteConfig } from '@/types';
-import { getCart, getMe } from '@/lib/api';
+import { getCart, getMe, apiLogout } from '@/lib/api';
 
 interface AppState {
   config: WebsiteConfig | null;
@@ -69,6 +69,7 @@ export function AppProvider({ children, initialConfig }: { children: React.React
   };
 
   const logout = () => {
+    if (token) apiLogout(token).catch(() => {});
     setToken(null);
     setUser(null);
     setCart(null);

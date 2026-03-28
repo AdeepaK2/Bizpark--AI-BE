@@ -200,12 +200,31 @@ export const updateProfile = (token: string, dto: { name?: string; currentPasswo
     method: 'PATCH', body: JSON.stringify(dto),
   }, token);
 
+// ── Auth — Logout / Admin Register ────────────────────────────────
+export const apiLogout = (token: string) =>
+  req<{ success: boolean }>('/api/commerce/auth/logout', { method: 'POST' }, token);
+
+export const adminRegisterAdmin = (token: string, dto: { email: string; password: string; name: string }) =>
+  req<{ access_token: string; user: AuthUser }>('/api/commerce/auth/admin/register', {
+    method: 'POST', body: JSON.stringify(dto),
+  }, token);
+
 // ── Customers — Admin ─────────────────────────────────────────────
 export const adminListCustomers = (token: string) =>
   req<{ success: boolean; data: Customer[] }>('/api/commerce/customers', {}, token);
 
 export const adminGetCustomer = (token: string, id: string) =>
   req<{ success: boolean; data: Customer }>(`/api/commerce/customers/${id}`, {}, token);
+
+export const adminCreateCustomer = (token: string, dto: { email: string; password: string; name?: string }) =>
+  req<{ success: boolean; data: Customer }>('/api/commerce/customers', {
+    method: 'POST', body: JSON.stringify(dto),
+  }, token);
+
+export const adminUpdateCustomer = (token: string, id: string, dto: { name?: string; role?: string }) =>
+  req<{ success: boolean; data: Customer }>(`/api/commerce/customers/${id}`, {
+    method: 'PATCH', body: JSON.stringify(dto),
+  }, token);
 
 // ── Shipping ──────────────────────────────────────────────────────
 export const getShippingMethods = () =>

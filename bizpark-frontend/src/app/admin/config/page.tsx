@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { updateWebsiteConfig } from '@/lib/api';
+import { updateWebsiteConfig, adminRegisterAdmin } from '@/lib/api';
 import type { WebsiteConfigContent } from '@/types';
 
 export default function AdminConfigPage() {
@@ -34,6 +34,11 @@ export default function AdminConfigPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+
+  // Create Admin User
+  const [adminForm, setAdminForm] = useState({ email: '', password: '', name: '' });
+  const [adminSaving, setAdminSaving] = useState(false);
+  const [adminMsg, setAdminMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Load current config into form
   useEffect(() => {
@@ -98,6 +103,20 @@ export default function AdminConfigPage() {
       setError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCreateAdmin = async () => {
+    if (!token) return;
+    setAdminMsg(null); setAdminSaving(true);
+    try {
+      await adminRegisterAdmin(token, { email: adminForm.email.trim(), password: adminForm.password, name: adminForm.name.trim() });
+      setAdminMsg({ type: 'success', text: `Admin user ${adminForm.email} created.` });
+      setAdminForm({ email: '', password: '', name: '' });
+    } catch (e: unknown) {
+      setAdminMsg({ type: 'error', text: e instanceof Error ? e.message : 'Failed to create admin' });
+    } finally {
+      setAdminSaving(false);
     }
   };
 
@@ -228,6 +247,35 @@ export default function AdminConfigPage() {
             <Field label="Facebook page">
               <input className={inputCls} value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="yourstore" />
             </Field>
+          </div>
+        </Section>
+
+        {/* Admin Users */}
+        <Section title="Admin Users">
+          <p className="text-xs text-gray-500">Create a new admin account for this store.</p>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Field label="Name">
+              <input className={inputCls} value={adminForm.name} onChange={e => setAdminForm(f => ({ ...f, name: e.target.value }))} placeholder="Jane Smith" />
+            </Field>
+            <Field label="Email *">
+              <input className={inputCls} type="email" value={adminForm.email} onChange={e => setAdminForm(f => ({ ...f, email: e.target.value }))} placeholder="jane@store.com" />
+            </Field>
+            <Field label="Password *">
+              <input className={inputCls} type="password" value={adminForm.password} onChange={e => setAdminForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" />
+            </Field>
+          </div>
+          {adminMsg && (
+            <p className={`text-xs px-3 py-2 rounded-lg ${adminMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'}`}>{adminMsg.text}</p>
+          )}
+          <div className="flex justify-end">
+            <button
+              onClick={handleCreateAdmin}
+              disabled={adminSaving || !adminForm.email || !adminForm.password}
+              className="px-5 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50"
+              style={{ backgroundColor: primary }}
+            >
+              {adminSaving ? 'Creating...' : 'Create Admin'}
+            </button>
           </div>
         </Section>
 
