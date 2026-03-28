@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
@@ -13,11 +14,17 @@ function assertCartAccess(user: JwtUser, customerId: string) {
   }
 }
 
+@ApiTags('Cart')
+@ApiSecurity('TenantId')
+@ApiBearerAuth('JWT')
 @Controller('api/commerce/cart')
 @UseGuards(JwtAuthGuard)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
+  @ApiOperation({ summary: 'Get cart', description: 'Returns the cart for the given customer. ADMIN can access any cart.' })
+  @ApiParam({ name: 'customerId', description: 'Customer UUID' })
+  @ApiResponse({ status: 200, description: 'Cart object with items' })
   @Get(':customerId')
   async getCart(
     @TenantId() tenantId: string,
@@ -28,6 +35,9 @@ export class CartController {
     return { success: true, data: await this.cartService.getCart(tenantId, customerId) };
   }
 
+  @ApiOperation({ summary: 'Add item to cart' })
+  @ApiParam({ name: 'customerId', description: 'Customer UUID' })
+  @ApiResponse({ status: 201, description: 'Updated cart' })
   @Post(':customerId/items')
   async addItem(
     @TenantId() tenantId: string,
@@ -39,7 +49,10 @@ export class CartController {
     return { success: true, data: await this.cartService.addItem(tenantId, customerId, dto) };
   }
 
-  // Update quantity of a specific cart item
+  @ApiOperation({ summary: 'Update cart item quantity' })
+  @ApiParam({ name: 'customerId', description: 'Customer UUID' })
+  @ApiParam({ name: 'itemId', description: 'Cart item UUID' })
+  @ApiResponse({ status: 200, description: 'Updated cart' })
   @Patch(':customerId/items/:itemId')
   async updateItem(
     @TenantId() tenantId: string,
@@ -52,7 +65,10 @@ export class CartController {
     return { success: true, data: await this.cartService.updateItemQuantity(tenantId, customerId, itemId, dto.quantity) };
   }
 
-  // Remove by cart item ID (supports multiple variants of same product)
+  @ApiOperation({ summary: 'Remove item from cart' })
+  @ApiParam({ name: 'customerId', description: 'Customer UUID' })
+  @ApiParam({ name: 'itemId', description: 'Cart item UUID' })
+  @ApiResponse({ status: 200, description: 'Updated cart' })
   @Delete(':customerId/items/:itemId')
   async removeItem(
     @TenantId() tenantId: string,

@@ -31,9 +31,11 @@ export class OrdersService {
     private readonly inventoryService: InventoryService,
   ) {}
 
-  async list(tenantId: string, page = 1, limit = 20) {
+  async list(tenantId: string, page = 1, limit = 20, status?: string) {
     const repo = await this.repo(tenantId);
+    const where = status ? { status: status as OrderStatus } : {};
     const [data, total] = await repo.findAndCount({
+      where,
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,

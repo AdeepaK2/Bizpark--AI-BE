@@ -1,15 +1,24 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { CatalogService } from './catalog.service';
+import { CreateProductDto, UpdateProductDto } from './dtos';
 
+@ApiTags('Catalog — Products')
+@ApiSecurity('TenantId')
 @Controller('api/commerce/catalog')
 export class CatalogController {
   constructor(private readonly catalogService: CatalogService) {}
 
-  // Public — browse products with optional category filter + pagination
+  @ApiOperation({ summary: 'List products', description: 'Public — browse with optional search, category filter, and pagination.' })
+  @ApiQuery({ name: 'search', required: false, example: 'shirt' })
+  @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category UUID' })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 20 })
+  @ApiResponse({ status: 200, description: 'Paginated product list' })
   @Get('products')
   async listProducts(
     @TenantId() tenantId: string,
@@ -29,36 +38,47 @@ export class CatalogController {
     };
   }
 
-  // Public — product detail
+  @ApiOperation({ summary: 'Get product', description: 'Public — fetch single product by ID.' })
+  @ApiParam({ name: 'id', description: 'Product UUID' })
+  @ApiResponse({ status: 200, description: 'Product detail' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
   @Get('products/:id')
   async getProduct(@TenantId() tenantId: string, @Param('id') id: string) {
     return { success: true, data: await this.catalogService.getProduct(tenantId, id) };
   }
 
-  // ADMIN only — create product
+  @ApiOperation({ summary: 'Create product (Admin)' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 201, description: 'Created product' })
   @Post('products')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async createProduct(
     @TenantId() tenantId: string,
-    @Body() dto: { title: string; description?: string; price: number; currency?: string; categoryId?: string },
+    @Body() dto: CreateProductDto,
   ) {
     return { success: true, data: await this.catalogService.createProduct(tenantId, dto) };
   }
 
-  // ADMIN only — update product
+  @ApiOperation({ summary: 'Update product (Admin)' })
+  @ApiBearerAuth('JWT')
+  @ApiParam({ name: 'id', description: 'Product UUID' })
+  @ApiResponse({ status: 200, description: 'Updated product' })
   @Patch('products/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async updateProduct(
     @TenantId() tenantId: string,
     @Param('id') id: string,
-    @Body() dto: { title?: string; description?: string; price?: number; currency?: string; categoryId?: string | null },
+    @Body() dto: UpdateProductDto,
   ) {
     return { success: true, data: await this.catalogService.updateProduct(tenantId, id, dto) };
   }
 
-  // ADMIN only — soft delete product
+  @ApiOperation({ summary: 'Delete product (Admin)' })
+  @ApiBearerAuth('JWT')
+  @ApiParam({ name: 'id', description: 'Product UUID' })
+  @ApiResponse({ status: 200, description: 'Deleted product' })
   @Delete('products/:id')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)

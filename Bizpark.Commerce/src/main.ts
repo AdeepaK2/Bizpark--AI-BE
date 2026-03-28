@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -18,7 +19,49 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // ── Swagger ────────────────────────────────────────────────────
+  const config = new DocumentBuilder()
+    .setTitle('Bizpark Commerce API')
+    .setDescription(
+      'Multi-tenant e-commerce REST API.\n\n' +
+      '**Headers required on every request:**\n' +
+      '- `x-tenant-id` — your tenant identifier (e.g. `testbiz`)\n\n' +
+      '**Auth:** Most write endpoints require a Bearer JWT obtained from `/api/commerce/auth/login`.',
+    )
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'JWT from /auth/login' },
+      'JWT',
+    )
+    .addApiKey({ type: 'apiKey', in: 'header', name: 'x-tenant-id', description: 'Tenant identifier' }, 'TenantId')
+    .addTag('Auth', 'Register, login, profile')
+    .addTag('Catalog — Products', 'Browse and manage products')
+    .addTag('Catalog — Categories', 'Browse and manage categories')
+    .addTag('Catalog — Variants', 'Product variants (size, colour, etc.)')
+    .addTag('Cart', 'Shopping cart operations')
+    .addTag('Checkout', 'Begin and complete checkout')
+    .addTag('Orders', 'Order management')
+    .addTag('Customers', 'Admin: manage customers')
+    .addTag('Inventory', 'Admin: stock management')
+    .addTag('Shipping', 'Shipping methods and quotes')
+    .addTag('Payments', 'Payment intents and webhooks')
+    .addTag('Subscriptions', 'Subscription management')
+    .addTag('Website Config', 'Store branding and content')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
+  // ──────────────────────────────────────────────────────────────
+
   await app.listen(process.env.PORT ?? 3003);
+  console.log(`\n📚 Swagger UI → http://localhost:${process.env.PORT ?? 3003}/api/docs\n`);
 }
 
 bootstrap();

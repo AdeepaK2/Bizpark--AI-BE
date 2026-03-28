@@ -1,38 +1,34 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
 import { WebsiteConfigService } from './website-config.service';
-import type { WebsiteConfigContent } from "../db/entities";
+import { UpdateWebsiteConfigDto } from './dtos';
 
+@ApiTags('Website Config')
+@ApiSecurity('TenantId')
 @Controller('api/commerce/website-config')
 export class WebsiteConfigController {
   constructor(private readonly configService: WebsiteConfigService) {}
 
-  // Public — frontend fetches branding on every page load
+  @ApiOperation({ summary: 'Get website config', description: 'Public — returns branding, colors, content for the storefront.' })
+  @ApiResponse({ status: 200, description: 'Website config object' })
   @Get()
   async get(@TenantId() tenantId: string) {
     return { success: true, data: await this.configService.get(tenantId) };
   }
 
-  // Admin / Agent — update any subset of config in one call
+  @ApiOperation({ summary: 'Update website config (Admin)', description: 'Update any subset of branding, content, SEO fields.' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 200, description: 'Updated config' })
   @Patch()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   async update(
     @TenantId() tenantId: string,
-    @Body() dto: {
-      businessName?: string;
-      tagline?: string | null;
-      primaryColor?: string;
-      secondaryColor?: string;
-      logoUrl?: string | null;
-      faviconUrl?: string | null;
-      currency?: string;
-      locale?: string;
-      content?: Partial<WebsiteConfigContent>;
-    },
+    @Body() dto: UpdateWebsiteConfigDto,
   ) {
     return { success: true, data: await this.configService.update(tenantId, dto) };
   }
