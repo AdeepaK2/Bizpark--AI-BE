@@ -30,9 +30,9 @@ export default function ProductPage() {
   }
 
   const price = new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(
-    selectedVariant
+    Number(selectedVariant
       ? (variants.find(v => v.id === selectedVariant)?.price ?? product.price)
-      : product.price
+      : product.price)
   );
 
   const handleAddToCart = async () => {
@@ -90,9 +90,9 @@ export default function ProductPage() {
                     }
                   >
                     {v.title}
-                    {v.price != null && v.price !== product.price && (
+                    {v.price != null && Number(v.price) !== Number(product.price) && (
                       <span className="ml-1 text-xs opacity-75">
-                        (+{new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(v.price - product.price)})
+                        (+{new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(Number(v.price) - Number(product.price))})
                       </span>
                     )}
                   </button>

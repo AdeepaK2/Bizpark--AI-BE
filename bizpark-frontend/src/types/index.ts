@@ -66,7 +66,7 @@ export interface Product {
   id: string;
   title: string;
   description: string | null;
-  price: number;
+  price: number | string; // backend returns decimal as string; JS coercion handles math
   currency: string;
   categoryId: string | null;
   deletedAt: string | null;
@@ -78,7 +78,7 @@ export interface ProductVariant {
   productId: string;
   title: string;
   attributes: Record<string, string>;
-  price: number | null;
+  price: number | string | null; // backend returns decimal as string
   sku: string;
   isActive: boolean;
 }

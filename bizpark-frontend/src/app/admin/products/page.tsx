@@ -8,6 +8,23 @@ import type { Product, Category } from '@/types';
 type ProductForm = { title: string; description: string; price: string; currency: string; categoryId: string };
 const EMPTY: ProductForm = { title: '', description: '', price: '', currency: 'USD', categoryId: '' };
 
+function flattenCategories(cats: Category[]): { id: string; name: string; depth: number }[] {
+  return cats.flatMap(c => [
+    { id: c.id, name: c.name, depth: 0 },
+    ...(c.children ?? []).map(ch => ({ id: ch.id, name: ch.name, depth: 1 })),
+  ]);
+}
+
+function findCategoryName(cats: Category[], id: string | null): string {
+  if (!id) return '—';
+  for (const c of cats) {
+    if (c.id === id) return c.name;
+    const child = (c.children ?? []).find(ch => ch.id === id);
+    if (child) return child.name;
+  }
+  return '—';
+}
+
 export default function AdminProductsPage() {
   const { token, config } = useApp();
   const primary = config?.primaryColor ?? '#2563eb';
@@ -107,7 +124,7 @@ export default function AdminProductsPage() {
               {products.map(p => (
                 <tr key={p.id} className="border-b last:border-0 hover:bg-gray-50">
                   <td className="px-5 py-3 font-medium text-gray-900">{p.title}</td>
-                  <td className="px-5 py-3 text-gray-500 hidden sm:table-cell">{categories.find(c => c.id === p.categoryId)?.name ?? '—'}</td>
+                  <td className="px-5 py-3 text-gray-500 hidden sm:table-cell">{findCategoryName(categories, p.categoryId)}</td>
                   <td className="px-5 py-3 text-right font-medium">{fmt(p.price, p.currency)}</td>
                   <td className="px-5 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -161,7 +178,9 @@ export default function AdminProductsPage() {
                 <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
                 <select className={inputCls} value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}>
                   <option value="">No category</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {flattenCategories(categories).map(c => (
+                    <option key={c.id} value={c.id}>{c.depth > 0 ? `\u00a0\u00a0↳ ${c.name}` : c.name}</option>
+                  ))}
                 </select>
               </div>
               {error && <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}

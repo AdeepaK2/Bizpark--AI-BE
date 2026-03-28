@@ -6,6 +6,13 @@ import type { Product, Category } from '@/types';
 import ProductCard from '@/components/ProductCard';
 import { useApp } from '@/context/AppContext';
 
+function flattenCategories(cats: Category[]): { id: string; name: string; depth: number }[] {
+  return cats.flatMap(c => [
+    { id: c.id, name: c.name, depth: 0 },
+    ...(c.children ?? []).map(ch => ({ id: ch.id, name: ch.name, depth: 1 })),
+  ]);
+}
+
 export default function ShopPage() {
   const { config } = useApp();
   const primary = config?.primaryColor ?? '#2563eb';
@@ -56,8 +63,8 @@ export default function ShopPage() {
           className="border rounded-lg px-4 py-2 text-sm bg-white focus:outline-none"
         >
           <option value="">All Categories</option>
-          {categories.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          {flattenCategories(categories).map(c => (
+            <option key={c.id} value={c.id}>{c.depth > 0 ? `\u00a0\u00a0↳ ${c.name}` : c.name}</option>
           ))}
         </select>
       </div>
