@@ -35,7 +35,11 @@ export class AgentController {
         const task = await runnerDb.agentTask.findUnique({ where: { id: taskId } });
         if (!task) throw new NotFoundException('Task not found');
 
-        const content = body.content;
+        // Use explicitly provided content, or fall back to what the AI generated
+        const taskOutput = task.outputData as Record<string, any> | null;
+        const content = body.content ?? taskOutput?.generatedContent;
+        if (!content) throw new BadRequestException('No content to publish — task has no generated output');
+
         const commerceUrl = process.env.COMMERCE_URL || 'http://localhost:3003';
         const internalKey = process.env.INTERNAL_API_KEY || '';
 
