@@ -3,7 +3,6 @@ import { AgentService } from './agent.service';
 import { runnerDb, CreateAgentTaskDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { randomBytes } from 'node:crypto';
 
 @Controller('api/agents')
 export class AgentController {
@@ -49,19 +48,12 @@ export class AgentController {
             data: { status: 'COMPLETED', outputData: { approvedContent: content } },
         });
 
-        // Push config + bootstrap in background — both are idempotent
+        // Push generated config to Commerce in background
         void fetch(`${commerceUrl}/api/commerce/website-config`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'x-tenant-id': task.businessId, 'x-internal-key': internalKey },
             body: JSON.stringify(content),
         }).catch((e) => console.warn('[Approve] Commerce config sync failed:', e));
-
-        const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
-        void fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-tenant-id': task.businessId },
-            body: JSON.stringify({ email: currentUser.email, password: adminPassword, name: currentUser.name }),
-        }).catch(() => { });
 
         return { success: true, message: 'Website published successfully', adminCredentials: null };
     }
