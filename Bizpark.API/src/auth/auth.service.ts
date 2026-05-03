@@ -23,7 +23,7 @@ export class AuthService {
             },
         });
 
-        const payload: JwtPayload = { sub: user.id, email: user.email, name: user.name };
+        const payload = { sub: user.id, email: user.email, name: user.name };
         return {
             access_token: this.jwtService.sign(payload),
             user: { id: user.id, email: user.email, name: user.name }
@@ -41,7 +41,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload: JwtPayload = { sub: user.id, email: user.email, name: user.name };
+        const payload = { sub: user.id, email: user.email, name: user.name };
         return {
             access_token: this.jwtService.sign(payload),
             user: { id: user.id, email: user.email, name: user.name }
