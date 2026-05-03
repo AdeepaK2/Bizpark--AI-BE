@@ -5,6 +5,6 @@ export declare class ApiWebsiteEntity extends BaseEntityWithTimestamps {
     domain: string | null;
     vercelUrl: string | null;
     cmsData: Record<string, unknown> | null;
-    templateId: string;
+    templateId: string | null;
     business: ApiBusinessEntity;
 }

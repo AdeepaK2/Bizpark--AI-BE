@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiSecurity } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { InternalOrJwtGuard } from '../auth/internal-or-jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { TenantId } from '../tenant/tenant.decorator';
@@ -24,7 +24,7 @@ export class WebsiteConfigController {
   @ApiBearerAuth('JWT')
   @ApiResponse({ status: 200, description: 'Updated config' })
   @Patch()
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @UseGuards(InternalOrJwtGuard, RolesGuard)
   @Roles('ADMIN')
   async update(
     @TenantId() tenantId: string,

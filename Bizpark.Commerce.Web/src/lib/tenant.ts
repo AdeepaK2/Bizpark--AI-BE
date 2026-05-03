@@ -1,5 +1,11 @@
 export function getTenantId(): string {
-  // Local dev — use env var
+  if (typeof window !== 'undefined') {
+    // ?tenant=<id> takes highest priority (preview links, direct testing)
+    const params = new URLSearchParams(window.location.search);
+    const queryTenant = params.get('tenant');
+    if (queryTenant) return queryTenant;
+  }
+  // Build-time env var (local dev with a fixed tenant)
   if (process.env.NEXT_PUBLIC_TENANT_ID) {
     return process.env.NEXT_PUBLIC_TENANT_ID;
   }

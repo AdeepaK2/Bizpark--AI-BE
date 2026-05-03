@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
+﻿import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto, SaveWebsiteConfigDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -52,10 +52,6 @@ export class BusinessController {
         if (!businesses.find(b => b.id === id)) {
             throw new Error('Unauthorized');
         }
-        if (!dto?.templateId || !dto.templateId.trim()) {
-            throw new BadRequestException('templateId is required to save website configuration');
-        }
-
         const website = await this.businessService.saveWebsiteConfig(id, dto);
         return {
             success: true,
@@ -67,6 +63,7 @@ export class BusinessController {
     @Post(':id/website/deploy')
     async deployWebsite(
         @Param('id') id: string,
+        @Body() body: { tone?: string },
         @CurrentUser() user: any
     ): Promise<any> {
         // Basic security check
@@ -78,7 +75,7 @@ export class BusinessController {
         // Just fetching to make sure it exists before we queue
         const business = await this.businessService.getBusinessById(id);
         const websiteConfig = business?.websites?.[0];
-        if (!websiteConfig?.templateId) {
+        if (!websiteConfig) {
             throw new BadRequestException('Website configuration not found. Save configuration first.');
         }
 
@@ -86,7 +83,20 @@ export class BusinessController {
         const queuedTask = await this.agentService.queueTask({
             businessId: id,
             taskType: "WEBSITE_GENERATION",
-            inputData: { websiteConfig }
+            inputData: {
+                business: {
+                    id: business.id,
+                    name: business.name,
+                    category: (business as any).category,
+                    description: (business as any).description,
+                    logoUrl: (business as any).logoUrl,
+                },
+                websiteConfig: {
+                    templateId: websiteConfig.templateId,
+                    cmsData: (websiteConfig as any).cmsData || {},
+                },
+                tone: body?.tone || 'professional',
+            },
         });
 
         return {

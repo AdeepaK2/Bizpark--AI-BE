@@ -13,6 +13,7 @@ export type TemplateType = (typeof TemplateType)[keyof typeof TemplateType];
 export declare const TaskStatus: {
     readonly QUEUED: "QUEUED";
     readonly PROCESSING: "PROCESSING";
+    readonly PENDING_APPROVAL: "PENDING_APPROVAL";
     readonly COMPLETED: "COMPLETED";
     readonly FAILED: "FAILED";
 };

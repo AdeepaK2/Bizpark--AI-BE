@@ -1,5 +1,5 @@
-import json
 import logging
+import uuid as uuid_lib
 
 from bullmq import Worker
 from sqlalchemy import select
@@ -7,22 +7,24 @@ from sqlalchemy import select
 from app.config import settings
 from app.db.models import AgentTask, TaskStatus
 from app.db.session import async_session
+from app.agents.website_builder import run_website_builder
 
 logger = logging.getLogger("runner.processor")
 
 
 async def process_agent_task(job, token=None):
-    """Process a single agent task from BullMQ queue."""
     job_data = job.data
     task_id = job_data["taskId"]
     business_id = job_data["businessId"]
     task_type = job_data["taskType"]
     input_data = job_data.get("inputData", {})
 
-    logger.info(f"[AGENT START] Task {task_id} [{task_type}]: Processing for business {business_id}...")
+    logger.info(f"[AGENT START] Task {task_id} [{task_type}] for business {business_id}")
 
     async with async_session() as session:
-        result = await session.execute(select(AgentTask).where(AgentTask.id == task_id))
+        result = await session.execute(
+            select(AgentTask).where(AgentTask.id == uuid_lib.UUID(task_id))
+        )
         task = result.scalar_one_or_none()
 
         if task:
@@ -30,29 +32,53 @@ async def process_agent_task(job, token=None):
             await session.commit()
         else:
             task = AgentTask(
-                id=task_id,
-                business_id=business_id,
-                task_type=task_type,
+                id=uuid_lib.UUID(task_id),
+                businessId=business_id,
+                taskType=task_type,
                 status=TaskStatus.PROCESSING,
-                input_data=input_data,
+                inputData=input_data,
             )
             session.add(task)
             await session.commit()
 
-        # TODO: Replace with actual AI agent flow (LangGraph/CrewAI)
-        import asyncio
-        await asyncio.sleep(3)
-        output = {"generatedContent": "FastAPI Runner Mock Response"}
+        try:
+            if task_type == "WEBSITE_GENERATION":
+                output = await _handle_website_generation(input_data)
+                task.status = TaskStatus.PENDING_APPROVAL
+                task.outputData = output
+            else:
+                task.status = TaskStatus.COMPLETED
+                task.outputData = {"message": f"{task_type} not yet implemented"}
 
-        task.status = TaskStatus.COMPLETED
-        task.output_data = output
+        except Exception as exc:
+            logger.error(f"[AGENT ERROR] Task {task_id}: {exc}")
+            task.status = TaskStatus.FAILED
+            task.outputData = {"error": str(exc)}
+
         await session.commit()
 
-    logger.info(f"[AGENT SUCCESS] Task {task_id}: Done.")
+    logger.info(f"[AGENT DONE] Task {task_id}: {task.status.value}")
+
+
+async def _handle_website_generation(input_data: dict) -> dict:
+    business = input_data.get("business", {})
+    website_config = input_data.get("websiteConfig", {})
+    cms_data = website_config.get("cmsData", {})
+    tone = input_data.get("tone", "professional")
+
+    generated = await run_website_builder(
+        business=business,
+        raw_cms_data=cms_data,
+        tone=tone,
+    )
+
+    return {
+        "generatedContent": generated,
+        "businessId": business.get("id"),
+    }
 
 
 async def start_worker():
-    """Start BullMQ worker that listens to 'agent-queue'."""
     worker = Worker(
         "agent-queue",
         process_agent_task,

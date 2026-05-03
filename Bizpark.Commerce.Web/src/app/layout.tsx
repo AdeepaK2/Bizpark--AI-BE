@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { cookies } from 'next/headers';
 import { AppProvider } from '@/context/AppContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -9,9 +10,19 @@ import type { WebsiteConfig } from '@/types';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
+async function getTenantFromCookie(): Promise<string | undefined> {
+  try {
+    const cookieStore = await cookies();
+    return cookieStore.get('bizpark_tenant')?.value || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const res = await getWebsiteConfig();
+    const tenantOverride = await getTenantFromCookie();
+    const res = await getWebsiteConfig(tenantOverride);
     const cfg = res.data;
     const seo = cfg?.content?.seo;
     return {
@@ -28,7 +39,8 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   let config: WebsiteConfig | null = null;
   try {
-    const res = await getWebsiteConfig();
+    const tenantOverride = await getTenantFromCookie();
+    const res = await getWebsiteConfig(tenantOverride);
     config = res.data ?? null;
   } catch {
     config = null;
