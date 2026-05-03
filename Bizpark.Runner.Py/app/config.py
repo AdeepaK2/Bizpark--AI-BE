@@ -18,4 +18,4 @@ class Settings(BaseSettings):
     model_config = {"env_file": str(CORE_ENV), "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
-settings = Settings()
+settings = Settings()  # noqa

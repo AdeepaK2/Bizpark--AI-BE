@@ -3,7 +3,7 @@ import { AgentService } from './agent.service';
 import { runnerDb, CreateAgentTaskDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 @Controller('api/agents')
 export class AgentController {

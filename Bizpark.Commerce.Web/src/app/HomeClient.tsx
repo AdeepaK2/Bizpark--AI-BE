@@ -31,6 +31,25 @@ export default function HomeClient({ config, featuredProducts }: Props) {
   const c = config?.content;
   const primary = config?.primaryColor ?? '#2563eb';
 
+  // ── Not yet configured — business created but AI website not generated ─────
+  const isUnconfigured = !c?.hero?.title && !c?.about?.title && !config?.tagline;
+  if (isUnconfigured && config?.businessName && config.businessName !== 'My Store') {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4">
+        <div className="size-16 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${primary}20` }}>
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: primary }}>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900">{config.businessName}</h1>
+        <p className="text-gray-500 max-w-sm">This store is being set up. Check back soon — something great is coming.</p>
+        <Link href="/shop" className="mt-2 px-6 py-2 rounded-lg text-white font-medium" style={{ backgroundColor: primary }}>
+          Browse Products
+        </Link>
+      </div>
+    );
+  }
+
   // ── Defaults when agent hasn't configured yet ──────────────────────────────
   const hero = c?.hero ?? {};
   const heroTitle = hero.title ?? config?.businessName ?? 'Welcome to Our Store';

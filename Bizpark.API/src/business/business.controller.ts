@@ -4,6 +4,7 @@ import { CreateBusinessDto, SaveWebsiteConfigDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AgentService } from '../agent/agent.service';
+import { randomBytes } from 'node:crypto';
 
 @Controller('api/business')
 @UseGuards(JwtAuthGuard)
@@ -14,12 +15,32 @@ export class BusinessController {
     ) { }
 
     @Post()
-    async createBusiness(@Body() dto: CreateBusinessDto, @CurrentUser() user: any) {
+    async createBusiness(@Body() dto: CreateBusinessDto, @CurrentUser() user: { id: string; email: string; name: string }) {
         const business = await this.businessService.createBusiness(dto, user.id);
+
+        // Provision Commerce schema + bootstrap admin account (best-effort, non-blocking)
+        const commerceUrl = process.env.COMMERCE_URL || 'http://localhost:3003';
+        const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
+        let adminCredentials: { email: string; password: string } | null = null;
+
+        try {
+            const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-tenant-id': business.id },
+                body: JSON.stringify({ email: user.email, password: adminPassword, name: user.name }),
+            });
+            if (bootstrapResp.ok) {
+                adminCredentials = { email: user.email, password: adminPassword };
+            }
+        } catch {
+            // Commerce may be starting up — admin can be provisioned later via the website publish flow
+        }
+
         return {
             success: true,
             message: 'Business created successfully',
-            data: business
+            data: { ...business, storefrontUrl: `http://localhost:3004/?tenant=${business.id}`, adminUrl: `http://localhost:3004/auth?tenant=${business.id}` },
+            adminCredentials,
         };
     }
 
