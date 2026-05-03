@@ -16,8 +16,8 @@ export class ApiWebsiteEntity extends BaseEntityWithTimestamps {
     @Column({ type: 'jsonb', nullable: true })
     cmsData!: Record<string, unknown> | null;
 
-    @Column({ type: 'uuid' })
-    templateId!: string;
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    templateId!: string | null;
 
     @ManyToOne(() => ApiBusinessEntity, (business) => business.websites, { onDelete: 'CASCADE' })
     @JoinColumn({ name: 'businessId' })

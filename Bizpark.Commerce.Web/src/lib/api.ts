@@ -10,8 +10,9 @@ async function req<T>(
   path: string,
   options: RequestInit = {},
   token?: string,
+  tenantOverride?: string,
 ): Promise<T> {
-  const tenantId = getTenantId();
+  const tenantId = tenantOverride || getTenantId();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'x-tenant-id': tenantId,
@@ -29,8 +30,8 @@ async function req<T>(
 }
 
 // ── Website Config ────────────────────────────────────────────────
-export const getWebsiteConfig = (): Promise<{ success: boolean; data: WebsiteConfig }> =>
-  req('/api/commerce/website-config');
+export const getWebsiteConfig = (tenantOverride?: string): Promise<{ success: boolean; data: WebsiteConfig }> =>
+  req('/api/commerce/website-config', {}, undefined, tenantOverride);
 
 export const updateWebsiteConfig = (token: string, payload: Partial<{
   businessName: string;
@@ -62,13 +63,13 @@ export const getMe = (token: string) =>
   req<{ success: boolean; data: AuthUser }>('/api/commerce/auth/me', {}, token);
 
 // ── Catalog — Public ──────────────────────────────────────────────
-export const getProducts = (params?: { search?: string; categoryId?: string; page?: number; limit?: number }) => {
+export const getProducts = (params?: { search?: string; categoryId?: string; page?: number; limit?: number }, tenantOverride?: string) => {
   const q = new URLSearchParams();
   if (params?.search) q.set('search', params.search);
   if (params?.categoryId) q.set('categoryId', params.categoryId);
   if (params?.page) q.set('page', String(params.page));
   if (params?.limit) q.set('limit', String(params.limit));
-  return req<{ success: boolean } & PaginatedResponse<Product>>(`/api/commerce/catalog/products?${q}`);
+  return req<{ success: boolean } & PaginatedResponse<Product>>(`/api/commerce/catalog/products?${q}`, {}, undefined, tenantOverride);
 };
 
 export const getProduct = (id: string) =>

@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
+﻿import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { CreateBusinessDto, SaveWebsiteConfigDto } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AgentService } from '../agent/agent.service';
+import { randomBytes } from 'node:crypto';
 
 @Controller('api/business')
 @UseGuards(JwtAuthGuard)
@@ -14,12 +15,47 @@ export class BusinessController {
     ) { }
 
     @Post()
-    async createBusiness(@Body() dto: CreateBusinessDto, @CurrentUser() user: any) {
+    async createBusiness(@Body() dto: CreateBusinessDto, @CurrentUser() user: { id: string; email: string; name: string }) {
         const business = await this.businessService.createBusiness(dto, user.id);
+
+        // Provision Commerce schema + bootstrap admin account (best-effort, non-blocking)
+        const commerceUrl = process.env.COMMERCE_URL || 'http://localhost:3003';
+        const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
+        const internalKey = process.env.INTERNAL_API_KEY || '';
+
+        // Fire Commerce provisioning in the background — do NOT await.
+        // Bootstrap + schema sync on Neon can take 10-30s on cold start;
+        // credentials are returned by the approve endpoint after AI generation anyway.
+        void (async () => {
+            try {
+                const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-tenant-id': business.id },
+                    body: JSON.stringify({ email: user.email, password: adminPassword, name: user.name }),
+                });
+                if (!bootstrapResp.ok) {
+                    console.warn(`[Business] Commerce bootstrap failed for tenant ${business.id}: ${bootstrapResp.status}`);
+                }
+            } catch { /* Commerce offline — provisioned on first website publish */ }
+
+            try {
+                await fetch(`${commerceUrl}/api/commerce/website-config`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-tenant-id': business.id,
+                        'x-internal-key': internalKey,
+                    },
+                    body: JSON.stringify({ businessName: business.name }),
+                });
+            } catch { /* non-critical */ }
+        })();
+
         return {
             success: true,
             message: 'Business created successfully',
-            data: business
+            data: { ...business, storefrontUrl: `http://localhost:3004/?tenant=${business.id}`, adminUrl: `http://localhost:3004/auth?tenant=${business.id}` },
+            adminCredentials: { email: user.email, password: adminPassword },
         };
     }
 
@@ -52,10 +88,6 @@ export class BusinessController {
         if (!businesses.find(b => b.id === id)) {
             throw new Error('Unauthorized');
         }
-        if (!dto?.templateId || !dto.templateId.trim()) {
-            throw new BadRequestException('templateId is required to save website configuration');
-        }
-
         const website = await this.businessService.saveWebsiteConfig(id, dto);
         return {
             success: true,
@@ -67,6 +99,7 @@ export class BusinessController {
     @Post(':id/website/deploy')
     async deployWebsite(
         @Param('id') id: string,
+        @Body() body: { tone?: string },
         @CurrentUser() user: any
     ): Promise<any> {
         // Basic security check
@@ -78,7 +111,7 @@ export class BusinessController {
         // Just fetching to make sure it exists before we queue
         const business = await this.businessService.getBusinessById(id);
         const websiteConfig = business?.websites?.[0];
-        if (!websiteConfig?.templateId) {
+        if (!websiteConfig) {
             throw new BadRequestException('Website configuration not found. Save configuration first.');
         }
 
@@ -86,7 +119,20 @@ export class BusinessController {
         const queuedTask = await this.agentService.queueTask({
             businessId: id,
             taskType: "WEBSITE_GENERATION",
-            inputData: { websiteConfig }
+            inputData: {
+                business: {
+                    id: business.id,
+                    name: business.name,
+                    category: (business as any).category,
+                    description: (business as any).description,
+                    logoUrl: (business as any).logoUrl,
+                },
+                websiteConfig: {
+                    templateId: websiteConfig.templateId,
+                    cmsData: (websiteConfig as any).cmsData || {},
+                },
+                tone: body?.tone || 'professional',
+            },
         });
 
         return {

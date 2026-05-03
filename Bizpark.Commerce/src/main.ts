@@ -1,7 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+
+// Suppress TypeORM + pg@8 synchronize deprecation warning.
+// TypeORM 0.3.x fires concurrent client.query() calls during schema sync.
+// Harmless — does not affect query correctness. Remove when migrating to TypeORM migrations.
+process.on('warning', (w) => {
+  if (w.message?.includes('client.query()')) {
+    // absorbed — suppress default stderr output for this known warning
+  }
+});
+// Override emit to prevent the default warning handler from printing it
+const _originalEmit = process.emit;
+process.emit = function (event: string, ...args: unknown[]): boolean {
+  if (event === 'warning' && (args[0] as Error)?.message?.includes('client.query()')) {
+    return false;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (_originalEmit as any).call(process, event, ...args);
+} as typeof process.emit;
 
 async function bootstrap() {
   if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'commerce-secret-change-me') {
@@ -18,7 +37,49 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // ── Swagger ────────────────────────────────────────────────────
+  const config = new DocumentBuilder()
+    .setTitle('Bizpark Commerce API')
+    .setDescription(
+      'Multi-tenant e-commerce REST API.\n\n' +
+      '**Headers required on every request:**\n' +
+      '- `x-tenant-id` — your tenant identifier (e.g. `testbiz`)\n\n' +
+      '**Auth:** Most write endpoints require a Bearer JWT obtained from `/api/commerce/auth/login`.',
+    )
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'JWT from /auth/login' },
+      'JWT',
+    )
+    .addApiKey({ type: 'apiKey', in: 'header', name: 'x-tenant-id', description: 'Tenant identifier' }, 'TenantId')
+    .addTag('Auth', 'Register, login, profile')
+    .addTag('Catalog — Products', 'Browse and manage products')
+    .addTag('Catalog — Categories', 'Browse and manage categories')
+    .addTag('Catalog — Variants', 'Product variants (size, colour, etc.)')
+    .addTag('Cart', 'Shopping cart operations')
+    .addTag('Checkout', 'Begin and complete checkout')
+    .addTag('Orders', 'Order management')
+    .addTag('Customers', 'Admin: manage customers')
+    .addTag('Inventory', 'Admin: stock management')
+    .addTag('Shipping', 'Shipping methods and quotes')
+    .addTag('Payments', 'Payment intents and webhooks')
+    .addTag('Subscriptions', 'Subscription management')
+    .addTag('Website Config', 'Store branding and content')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
+  // ──────────────────────────────────────────────────────────────
+
   await app.listen(process.env.PORT ?? 3003);
+  console.log(`\n📚 Swagger UI → http://localhost:${process.env.PORT ?? 3003}/api/docs\n`);
 }
 
 bootstrap();

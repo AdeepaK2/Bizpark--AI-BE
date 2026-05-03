@@ -17,7 +17,6 @@ export class AppService {
         </head>
         <body>
           <h1>Bizpark Admin</h1>
-          <p><a href="/admin/templates">Open Template Manager</a></p>
         </body>
       </html>
     `;

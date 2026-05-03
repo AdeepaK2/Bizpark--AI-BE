@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiSecurity } from '@nestjs/swagger';
 import { TenantId } from '../tenant/tenant.decorator';
 import { AuthService } from './auth.service';
 import { CommerceAdminRegisterDto, CommerceLoginDto, CommerceRegisterDto, UpdateProfileDto } from './dtos';
@@ -9,23 +10,32 @@ import { CurrentUser } from './current-user.decorator';
 
 type JwtUser = { id: string; tenantId: string; email: string; role: string };
 
+@ApiTags('Auth')
+@ApiSecurity('TenantId')
 @Controller('api/commerce/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // Bootstrap — creates the first ADMIN for a tenant; 409 if admin already exists
+  @ApiOperation({ summary: 'Bootstrap first admin', description: 'Creates the first ADMIN user for a tenant. Returns 409 if an admin already exists.' })
+  @ApiResponse({ status: 201, description: 'Admin created with JWT token' })
+  @ApiResponse({ status: 409, description: 'Admin already exists for this tenant' })
   @Post('bootstrap')
   bootstrap(@TenantId() tenantId: string, @Body() dto: CommerceAdminRegisterDto) {
     return this.authService.bootstrapAdmin(tenantId, dto.email, dto.password, dto.name);
   }
 
-  // Public — register as CUSTOMER
+  @ApiOperation({ summary: 'Register customer', description: 'Public — registers a new CUSTOMER account.' })
+  @ApiResponse({ status: 201, description: 'Returns access_token + user object' })
+  @ApiResponse({ status: 409, description: 'Email already in use' })
   @Post('register')
   register(@TenantId() tenantId: string, @Body() dto: CommerceRegisterDto) {
     return this.authService.register(tenantId, dto.email, dto.password, dto.name, 'CUSTOMER');
   }
 
-  // Protected — only existing ADMIN can create another ADMIN
+  @ApiOperation({ summary: 'Create admin user', description: 'ADMIN only — existing admin creates another admin account.' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 201, description: 'Returns access_token + user object' })
+  @ApiResponse({ status: 403, description: 'Not an admin' })
   @Post('admin/register')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -33,28 +43,36 @@ export class AuthController {
     return this.authService.register(tenantId, dto.email, dto.password, dto.name, 'ADMIN');
   }
 
-  // Public — login for both CUSTOMER and ADMIN
+  @ApiOperation({ summary: 'Login', description: 'Works for both CUSTOMER and ADMIN accounts.' })
+  @ApiResponse({ status: 200, description: 'Returns access_token + user object' })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@TenantId() tenantId: string, @Body() dto: CommerceLoginDto) {
     return this.authService.login(tenantId, dto.email, dto.password);
   }
 
-  // Protected — get current user profile
+  @ApiOperation({ summary: 'Get current user', description: 'Returns the authenticated user profile.' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 200, description: 'Returns { success, data: user }' })
   @Get('me')
   @UseGuards(JwtAuthGuard)
   me(@CurrentUser() user: unknown) {
     return { success: true, data: user };
   }
 
-  // Protected — update own profile (name and/or password)
+  @ApiOperation({ summary: 'Update profile', description: 'Update name and/or change password.' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 200, description: 'Returns updated user' })
   @Patch('profile')
   @UseGuards(JwtAuthGuard)
   async updateProfile(@TenantId() tenantId: string, @CurrentUser() user: JwtUser, @Body() dto: UpdateProfileDto) {
     return { success: true, data: await this.authService.updateProfile(tenantId, user.id, dto) };
   }
 
-  // Logout — client-side token discard (stateless JWT, no server blacklist)
+  @ApiOperation({ summary: 'Logout', description: 'Stateless logout — discard your JWT client-side.' })
+  @ApiBearerAuth('JWT')
+  @ApiResponse({ status: 200, description: '{ success: true }' })
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)

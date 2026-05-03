@@ -14,6 +14,7 @@ exports.TemplateType = {
 exports.TaskStatus = {
     QUEUED: 'QUEUED',
     PROCESSING: 'PROCESSING',
+    PENDING_APPROVAL: 'PENDING_APPROVAL',
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED',
 };
