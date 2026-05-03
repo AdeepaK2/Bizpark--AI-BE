@@ -43,34 +43,25 @@ export class AgentController {
         const commerceUrl = process.env.COMMERCE_URL || 'http://localhost:3003';
         const internalKey = process.env.INTERNAL_API_KEY || '';
 
-        // 1. Push website config to Commerce
-        const resp = await fetch(`${commerceUrl}/api/commerce/website-config`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-tenant-id': task.businessId,
-                'x-internal-key': internalKey,
-            },
-            body: JSON.stringify(content),
-        });
-
-        if (!resp.ok) {
-            throw new BadRequestException(`Commerce update failed: ${resp.status}`);
-        }
-
+        // Mark completed immediately — Commerce sync is non-blocking
         await runnerDb.agentTask.update({
             where: { id: taskId },
             data: { status: 'COMPLETED', outputData: { approvedContent: content } },
         });
 
-        // Bootstrap fire-and-forget — if business creation already ran it this returns 409 (fine).
-        // Frontend uses localStorage credentials from business creation as the source of truth.
+        // Push config + bootstrap in background — both are idempotent
+        void fetch(`${commerceUrl}/api/commerce/website-config`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'x-tenant-id': task.businessId, 'x-internal-key': internalKey },
+            body: JSON.stringify(content),
+        }).catch((e) => console.warn('[Approve] Commerce config sync failed:', e));
+
         const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
         void fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'x-tenant-id': task.businessId },
             body: JSON.stringify({ email: currentUser.email, password: adminPassword, name: currentUser.name }),
-        }).catch(() => { /* non-critical */ });
+        }).catch(() => { });
 
         return { success: true, message: 'Website published successfully', adminCredentials: null };
     }
