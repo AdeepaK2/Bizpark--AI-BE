@@ -21,43 +21,41 @@ export class BusinessController {
         // Provision Commerce schema + bootstrap admin account (best-effort, non-blocking)
         const commerceUrl = process.env.COMMERCE_URL || 'http://localhost:3003';
         const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
-        let adminCredentials: { email: string; password: string } | null = null;
-
         const internalKey = process.env.INTERNAL_API_KEY || '';
-        try {
-            const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'x-tenant-id': business.id },
-                body: JSON.stringify({ email: user.email, password: adminPassword, name: user.name }),
-            });
-            if (bootstrapResp.ok) {
-                adminCredentials = { email: user.email, password: adminPassword };
-            }
-        } catch {
-            // Commerce may be starting up — admin can be provisioned later via the website publish flow
-        }
 
-        // Patch Commerce website-config with the real business name so the storefront
-        // shows a proper "coming soon" page instead of the default "My Store" placeholder.
-        try {
-            await fetch(`${commerceUrl}/api/commerce/website-config`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-tenant-id': business.id,
-                    'x-internal-key': internalKey,
-                },
-                body: JSON.stringify({ businessName: business.name }),
-            });
-        } catch {
-            // non-critical — storefront will still show a placeholder until website is published
-        }
+        // Fire Commerce provisioning in the background — do NOT await.
+        // Bootstrap + schema sync on Neon can take 10-30s on cold start;
+        // credentials are returned by the approve endpoint after AI generation anyway.
+        void (async () => {
+            try {
+                const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'x-tenant-id': business.id },
+                    body: JSON.stringify({ email: user.email, password: adminPassword, name: user.name }),
+                });
+                if (!bootstrapResp.ok) {
+                    console.warn(`[Business] Commerce bootstrap failed for tenant ${business.id}: ${bootstrapResp.status}`);
+                }
+            } catch { /* Commerce offline — provisioned on first website publish */ }
+
+            try {
+                await fetch(`${commerceUrl}/api/commerce/website-config`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-tenant-id': business.id,
+                        'x-internal-key': internalKey,
+                    },
+                    body: JSON.stringify({ businessName: business.name }),
+                });
+            } catch { /* non-critical */ }
+        })();
 
         return {
             success: true,
             message: 'Business created successfully',
             data: { ...business, storefrontUrl: `http://localhost:3004/?tenant=${business.id}`, adminUrl: `http://localhost:3004/auth?tenant=${business.id}` },
-            adminCredentials,
+            adminCredentials: { email: user.email, password: adminPassword },
         };
     }
 
