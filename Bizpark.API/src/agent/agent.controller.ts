@@ -58,31 +58,21 @@ export class AgentController {
             throw new BadRequestException(`Commerce update failed: ${resp.status}`);
         }
 
-        // 2. Bootstrap Commerce admin account for the business owner (idempotent — 409 = already exists)
-        const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
-        let adminCredentials: { email: string; password: string } | null = null;
-
-        const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-tenant-id': task.businessId,
-                'x-internal-key': internalKey,
-            },
-            body: JSON.stringify({ email: currentUser.email, password: adminPassword, name: currentUser.name }),
-        });
-
-        if (bootstrapResp.ok) {
-            adminCredentials = { email: currentUser.email, password: adminPassword };
-        }
-        // 409 = admin already exists, skip silently
-
         await runnerDb.agentTask.update({
             where: { id: taskId },
             data: { status: 'COMPLETED', outputData: { approvedContent: content } },
         });
 
-        return { success: true, message: 'Website published successfully', adminCredentials };
+        // Bootstrap fire-and-forget — if business creation already ran it this returns 409 (fine).
+        // Frontend uses localStorage credentials from business creation as the source of truth.
+        const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
+        void fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-tenant-id': task.businessId },
+            body: JSON.stringify({ email: currentUser.email, password: adminPassword, name: currentUser.name }),
+        }).catch(() => { /* non-critical */ });
+
+        return { success: true, message: 'Website published successfully', adminCredentials: null };
     }
 
     @Post('tasks/:taskId/reject')
