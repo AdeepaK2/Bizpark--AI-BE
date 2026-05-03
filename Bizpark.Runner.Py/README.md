@@ -20,11 +20,25 @@ pip install -r requirements.txt
 
 ## Run
 
+**Recommended (Windows) — one command, no venv activation needed:**
+
+```powershell
+.\start.bat
+```
+
+`start.bat` invokes the venv's Python directly (`venv\Scripts\python.exe run.py`), so it always uses project dependencies regardless of which Python is on PATH. Forwards any args (e.g. `.\start.bat --port 3005`).
+
+**Alternative — activate venv manually first:**
+
 ```bash
+venv\Scripts\activate       # Windows
+# source venv/bin/activate  # Mac/Linux
 python run.py
 ```
 
-Runs on `http://localhost:3001`
+> If you see `ModuleNotFoundError: No module named 'bullmq'` (or similar), you're on system Python, not the venv. Use `.\start.bat` instead.
+
+Runs on `http://localhost:3001`.
 
 ## Project Structure
 
