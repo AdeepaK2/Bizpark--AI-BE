@@ -23,6 +23,7 @@ export class BusinessController {
         const adminPassword = 'Biz-' + randomBytes(4).toString('hex');
         let adminCredentials: { email: string; password: string } | null = null;
 
+        const internalKey = process.env.INTERNAL_API_KEY || '';
         try {
             const bootstrapResp = await fetch(`${commerceUrl}/api/commerce/auth/bootstrap`, {
                 method: 'POST',
@@ -34,6 +35,22 @@ export class BusinessController {
             }
         } catch {
             // Commerce may be starting up — admin can be provisioned later via the website publish flow
+        }
+
+        // Patch Commerce website-config with the real business name so the storefront
+        // shows a proper "coming soon" page instead of the default "My Store" placeholder.
+        try {
+            await fetch(`${commerceUrl}/api/commerce/website-config`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-tenant-id': business.id,
+                    'x-internal-key': internalKey,
+                },
+                body: JSON.stringify({ businessName: business.name }),
+            });
+        } catch {
+            // non-critical — storefront will still show a placeholder until website is published
         }
 
         return {
