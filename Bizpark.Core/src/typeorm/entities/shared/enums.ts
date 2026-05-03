@@ -15,6 +15,7 @@ export type TemplateType = (typeof TemplateType)[keyof typeof TemplateType];
 export const TaskStatus = {
     QUEUED: 'QUEUED',
     PROCESSING: 'PROCESSING',
+    PENDING_APPROVAL: 'PENDING_APPROVAL',
     COMPLETED: 'COMPLETED',
     FAILED: 'FAILED',
 } as const;

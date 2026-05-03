@@ -10,12 +10,13 @@ from app.config import settings
 
 
 class Base(DeclarativeBase):
-    __table_args__ = {"schema": settings.runner_db_schema}
+    pass
 
 
 class TaskStatus(str, enum.Enum):
     QUEUED = "QUEUED"
     PROCESSING = "PROCESSING"
+    PENDING_APPROVAL = "PENDING_APPROVAL"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
 
@@ -27,21 +28,29 @@ class TaskType(str, enum.Enum):
 
 
 class AgentTask(Base):
-    __tablename__ = "agent_task"
+    # Table and column names match exactly what TypeORM created
+    __tablename__ = "AgentTask"
+    __table_args__ = {"schema": settings.runner_db_schema}
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    business_id = Column(String, nullable=False)
-    task_type = Column(Enum(TaskType, name="task_type_enum", schema=settings.runner_db_schema), nullable=False)
+    businessId = Column("businessId", String, nullable=False)
+    taskType = Column(
+        "taskType",
+        Enum(TaskType, name="TaskType", schema=settings.runner_db_schema, create_type=False),
+        nullable=False,
+    )
     status = Column(
-        Enum(TaskStatus, name="task_status_enum", schema=settings.runner_db_schema),
+        "status",
+        Enum(TaskStatus, name="TaskStatus", schema=settings.runner_db_schema, create_type=False),
         nullable=False,
         default=TaskStatus.QUEUED,
     )
-    input_data = Column(JSONB, default={})
-    output_data = Column(JSONB, nullable=True)
-    logs = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(
+    inputData = Column("inputData", JSONB, default={})
+    outputData = Column("outputData", JSONB, nullable=True)
+    logs = Column("logs", Text, nullable=True)
+    createdAt = Column("createdAt", DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updatedAt = Column(
+        "updatedAt",
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),

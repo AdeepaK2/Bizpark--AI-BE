@@ -20,7 +20,7 @@ export default function ProductCard({ product, currency = 'USD' }: Props) {
 
   const price = new Intl.NumberFormat('en-US', {
     style: 'currency', currency,
-  }).format(product.price);
+  }).format(Number(product.price));
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
