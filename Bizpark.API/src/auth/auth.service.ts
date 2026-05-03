@@ -8,23 +8,22 @@ export class AuthService {
     constructor(private jwtService: JwtService) { }
 
     async register(dto: RegisterUserDto) {
-        const existingUser = await applicationDb.user.findUnique({ where: { email: dto.email } });
+        const existingUser = await applicationDb.user.findUnique({ where: { email: dto.email.trim().toLowerCase() } });
         if (existingUser) {
             throw new BadRequestException('Email already in use');
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(dto.password, salt);
+        const passwordHash = await bcrypt.hash(dto.password, 10);
 
         const user = await applicationDb.user.create({
             data: {
-                email: dto.email,
-                name: dto.name,
+                email: dto.email.trim().toLowerCase(),
+                name: dto.name.trim(),
                 passwordHash,
             },
         });
 
-        const payload: JwtPayload = { sub: user.id, email: user.email };
+        const payload: JwtPayload = { sub: user.id, email: user.email, name: user.name };
         return {
             access_token: this.jwtService.sign(payload),
             user: { id: user.id, email: user.email, name: user.name }
@@ -32,7 +31,7 @@ export class AuthService {
     }
 
     async login(dto: LoginUserDto) {
-        const user = await applicationDb.user.findUnique({ where: { email: dto.email } });
+        const user = await applicationDb.user.findUnique({ where: { email: dto.email.trim().toLowerCase() } });
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
@@ -42,7 +41,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const payload: JwtPayload = { sub: user.id, email: user.email };
+        const payload: JwtPayload = { sub: user.id, email: user.email, name: user.name };
         return {
             access_token: this.jwtService.sign(payload),
             user: { id: user.id, email: user.email, name: user.name }
