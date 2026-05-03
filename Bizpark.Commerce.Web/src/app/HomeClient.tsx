@@ -38,13 +38,7 @@ export default function HomeClient({ config, featuredProducts }: Props) {
   const heroCTA = hero.ctaText ?? 'Shop Now';
   const heroCTALink = hero.ctaLink ?? '/shop';
 
-  const defaultFeatures = [
-    { icon: 'truck', title: 'Free Shipping', description: 'On all orders over $50' },
-    { icon: 'refresh', title: 'Easy Returns', description: '30-day hassle-free returns' },
-    { icon: 'shield', title: 'Secure Payment', description: 'Your data is always protected' },
-    { icon: 'headphones', title: '24/7 Support', description: 'We\'re here when you need us' },
-  ];
-  const features = c?.features?.length ? c.features : defaultFeatures;
+  const features = c?.features?.length ? c.features : null;
 
   const announcement = c?.announcement;
   const about = c?.about;
@@ -97,23 +91,25 @@ export default function HomeClient({ config, featuredProducts }: Props) {
       </section>
 
       {/* ── Features / Trust Row ── agent sets content.features ── */}
-      <section className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
-            {features.map((f, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-3">
-                <div className="text-primary" style={{ color: primary }}>
-                  <FeatureIcon name={f.icon} />
+      {features && (
+        <section className="bg-white border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+              {features.map((f, i) => (
+                <div key={i} className="flex flex-col items-center text-center gap-3">
+                  <div className="text-primary" style={{ color: primary }}>
+                    <FeatureIcon name={f.icon} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{f.title}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm">{f.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{f.description}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ── Featured Products ── auto from catalog ── */}
       {featuredProducts.length > 0 && (
