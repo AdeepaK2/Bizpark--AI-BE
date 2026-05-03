@@ -44,7 +44,8 @@ Runs on `http://localhost:3001`.
 
 ```
 Bizpark.Runner.Py/
-├── run.py                  # Entry point
+├── start.bat               # Windows one-command launcher (uses venv automatically)
+├── run.py                  # Entry point (uvicorn loader)
 ├── requirements.txt        # Python dependencies
 └── app/
     ├── main.py             # FastAPI app + BullMQ worker startup
