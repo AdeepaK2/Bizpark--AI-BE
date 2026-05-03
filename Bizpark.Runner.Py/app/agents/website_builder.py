@@ -9,6 +9,15 @@ from app.config import settings
 
 logger = logging.getLogger("runner.agents.website_builder")
 
+# Instantiate once at module load — avoid per-call overhead
+_llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash",
+    google_api_key=settings.gemini_api_key,
+    temperature=0.4,
+    thinking_budget=0,
+    model_kwargs={"generation_config": {"response_mime_type": "application/json"}},
+)
+
 
 class WebsiteState(TypedDict):
     business: dict
@@ -111,15 +120,10 @@ Return ONLY a valid JSON object — no markdown, no explanation, no extra text:
 }}"""
 
     try:
-        llm = ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
-            google_api_key=settings.gemini_api_key,
-            temperature=0.7,
-        )
-        response = llm.invoke(prompt)
+        response = _llm.invoke(prompt)
         raw_text = response.content.strip()
 
-        # Strip markdown code fences if present
+        # Fallback strip in case model ignores mime type
         if raw_text.startswith("```"):
             raw_text = raw_text.split("```")[1]
             if raw_text.startswith("json"):
