@@ -1,4 +1,4 @@
-name: Deploy API to Azure Container Apps
+name: Deploy Commerce API to Azure Container Apps
 
 on:
   workflow_dispatch:
@@ -7,14 +7,14 @@ on:
       - main
       - featur/deploy-ci/cd
     paths:
-      - 'Bizpark.API/**'
+      - 'Bizpark.Commerce/**'
       - 'Bizpark.Core/**'
-      - 'Dockerfile.api'
-      - '.github/workflows/azure-deploy-api.yml'
+      - 'Dockerfile.commerce'
+      - '.github/workflows/azure-deploy-commerce.yml'
 
 env:
   AZURE_CONTAINER_REGISTRY: "bizparkacr"
-  CONTAINER_APP_NAME: "bizpark-api"
+  CONTAINER_APP_NAME: "bizpark-commerce"
   RESOURCE_GROUP: "bizpark-rg"
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
         uses: azure/container-apps-deploy-action@v1
         with:
           appSourcePath: ${{ github.workspace }}
-          dockerfilePath: Dockerfile.api
+          dockerfilePath: Dockerfile.commerce
           registryUrl: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io
           registryUsername: ${{ secrets.ACR_USERNAME }}
           registryPassword: ${{ secrets.ACR_PASSWORD }}
