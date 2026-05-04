@@ -79,14 +79,20 @@ async def _handle_website_generation(input_data: dict) -> dict:
 
 
 async def start_worker():
+    # Use full Redis URL (Upstash / Railway) when available, else host:port
+    if settings.redis_url:
+        redis_connection = settings.redis_url
+    else:
+        redis_connection = {
+            "host": settings.redis_host,
+            "port": settings.redis_port,
+        }
+
     worker = Worker(
         "agent-queue",
         process_agent_task,
         {
-            "connection": {
-                "host": settings.redis_host,
-                "port": settings.redis_port,
-            },
+            "connection": redis_connection,
         },
     )
     logger.info("BullMQ Worker started — listening on 'agent-queue'")

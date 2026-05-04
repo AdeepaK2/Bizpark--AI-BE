@@ -2,7 +2,7 @@ import json
 import logging
 from typing import TypedDict, Optional
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 
 from app.config import settings
@@ -10,12 +10,11 @@ from app.config import settings
 logger = logging.getLogger("runner.agents.website_builder")
 
 # Instantiate once at module load — avoid per-call overhead
-_llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    google_api_key=settings.gemini_api_key,
+_llm = ChatOpenAI(
+    model="gpt-4o",
+    api_key=settings.openai_api_key,
     temperature=0.4,
-    thinking_budget=0,
-    model_kwargs={"generation_config": {"response_mime_type": "application/json"}},
+    model_kwargs={"response_format": {"type": "json_object"}},
 )
 
 
@@ -34,7 +33,7 @@ def validate_input(state: WebsiteState) -> WebsiteState:
     return {**state, "error": None}
 
 
-def generate_with_gemini(state: WebsiteState) -> WebsiteState:
+def generate_with_openai(state: WebsiteState) -> WebsiteState:
     if state.get("error"):
         return state
 
@@ -131,11 +130,11 @@ Return ONLY a valid JSON object — no markdown, no explanation, no extra text:
             raw_text = raw_text.strip()
 
         generated = json.loads(raw_text)
-        logger.info(f"Gemini generated full config for {business_name}")
+        logger.info(f"OpenAI generated full config for {business_name}")
         return {**state, "generated_content": generated}
 
     except Exception as e:
-        logger.error(f"Gemini generation failed: {e}")
+        logger.error(f"OpenAI generation failed: {e}")
         return {**state, "error": str(e)}
 
 
@@ -145,7 +144,7 @@ def should_end_on_error(state: WebsiteState) -> str:
 
 _builder = StateGraph(WebsiteState)
 _builder.add_node("validate", validate_input)
-_builder.add_node("generate", generate_with_gemini)
+_builder.add_node("generate", generate_with_openai)
 _builder.set_entry_point("validate")
 _builder.add_conditional_edges("validate", should_end_on_error, {"generate": "generate", "end": END})
 _builder.add_edge("generate", END)
