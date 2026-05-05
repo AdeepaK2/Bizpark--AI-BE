@@ -8,10 +8,6 @@ import Footer from '@/components/Footer';
 import { getWebsiteConfig } from '@/lib/api';
 import type { WebsiteConfig } from '@/types';
 
-// Never statically pre-render — tenant config is resolved at request time from
-// the subdomain / cookie, so every request must be handled dynamically.
-export const dynamic = 'force-dynamic';
-
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 async function getTenantFromCookie(): Promise<string | undefined> {
