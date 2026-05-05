@@ -78,15 +78,14 @@ async def _handle_website_generation(input_data: dict) -> dict:
     }
 
 
+import redis.asyncio as redis_async
+
 async def start_worker():
     # Use full Redis URL (Upstash / Railway) when available, else host:port
     if settings.redis_url:
-        redis_connection = settings.redis_url
+        redis_connection = redis_async.Redis.from_url(settings.redis_url)
     else:
-        redis_connection = {
-            "host": settings.redis_host,
-            "port": settings.redis_port,
-        }
+        redis_connection = redis_async.Redis(host=settings.redis_host, port=settings.redis_port)
 
     worker = Worker(
         "agent-queue",
