@@ -12,8 +12,16 @@ import { AuthModule } from './auth/auth.module';
 function buildRedisConnection() {
   const redisUrl = process.env.REDIS_URL;
   if (redisUrl) {
-    // BullMQ accepts a connection string directly
-    return { url: redisUrl };
+    // Parse the URL string into standard RedisOptions
+    // BullMQ/ioredis doesn't accept a { url: '...' } option object directly
+    const url = new URL(redisUrl);
+    return {
+      host: url.hostname,
+      port: Number(url.port) || 6379,
+      username: url.username || undefined,
+      password: url.password || undefined,
+      tls: url.protocol === 'rediss:' ? {} : undefined,
+    };
   }
   const host = process.env.REDIS_HOST || 'localhost';
   const port = Number(process.env.REDIS_PORT || 6379);

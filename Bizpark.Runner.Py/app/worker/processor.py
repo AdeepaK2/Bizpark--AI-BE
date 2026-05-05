@@ -78,14 +78,23 @@ async def _handle_website_generation(input_data: dict) -> dict:
     }
 
 
-import redis.asyncio as redis_async
+from urllib.parse import urlparse
 
 async def start_worker():
-    # Use full Redis URL (Upstash / Railway) when available, else host:port
+    # Parse the Redis URL manually for BullMQ which expects a dictionary
     if settings.redis_url:
-        redis_connection = redis_async.Redis.from_url(settings.redis_url)
+        parsed = urlparse(settings.redis_url)
+        redis_connection = {
+            "host": parsed.hostname,
+            "port": parsed.port or 6379,
+            "password": parsed.password,
+            "ssl": parsed.scheme == "rediss"
+        }
     else:
-        redis_connection = redis_async.Redis(host=settings.redis_host, port=settings.redis_port)
+        redis_connection = {
+            "host": settings.redis_host,
+            "port": settings.redis_port,
+        }
 
     worker = Worker(
         "agent-queue",
