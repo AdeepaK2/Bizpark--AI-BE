@@ -17,10 +17,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.API_ENTITIES = void 0;
 const business_entity_1 = require("./business.entity");
 const business_user_entity_1 = require("./business-user.entity");
+const google_business_connection_entity_1 = require("./google-business-connection.entity");
+const google_business_review_entity_1 = require("./google-business-review.entity");
 const user_entity_1 = require("./user.entity");
 const website_entity_1 = require("./website.entity");
-exports.API_ENTITIES = [user_entity_1.ApiUserEntity, business_entity_1.ApiBusinessEntity, business_user_entity_1.ApiBusinessUserEntity, website_entity_1.ApiWebsiteEntity];
+exports.API_ENTITIES = [
+    user_entity_1.ApiUserEntity,
+    business_entity_1.ApiBusinessEntity,
+    business_user_entity_1.ApiBusinessUserEntity,
+    website_entity_1.ApiWebsiteEntity,
+    google_business_connection_entity_1.ApiGoogleBusinessConnectionEntity,
+    google_business_review_entity_1.ApiGoogleBusinessReviewEntity,
+];
 __exportStar(require("./business.entity"), exports);
 __exportStar(require("./business-user.entity"), exports);
+__exportStar(require("./google-business-connection.entity"), exports);
+__exportStar(require("./google-business-review.entity"), exports);
 __exportStar(require("./user.entity"), exports);
 __exportStar(require("./website.entity"), exports);

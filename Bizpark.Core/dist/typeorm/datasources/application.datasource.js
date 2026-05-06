@@ -20,3 +20,4 @@ const getApplicationDataSource = () => {
     return applicationDataSource;
 };
 exports.getApplicationDataSource = getApplicationDataSource;
+exports.default = (0, exports.getApplicationDataSource)();

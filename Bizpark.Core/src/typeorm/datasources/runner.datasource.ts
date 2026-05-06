@@ -20,3 +20,5 @@ export const getRunnerDataSource = () => {
     }
     return runnerDataSource;
 };
+
+export default getRunnerDataSource();

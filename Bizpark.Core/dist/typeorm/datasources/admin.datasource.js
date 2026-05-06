@@ -20,3 +20,4 @@ const getAdminDataSource = () => {
     return adminDataSource;
 };
 exports.getAdminDataSource = getAdminDataSource;
+exports.default = (0, exports.getAdminDataSource)();

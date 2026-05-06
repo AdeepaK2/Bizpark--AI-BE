@@ -20,3 +20,4 @@ const getRunnerDataSource = () => {
     return runnerDataSource;
 };
 exports.getRunnerDataSource = getRunnerDataSource;
+exports.default = (0, exports.getRunnerDataSource)();

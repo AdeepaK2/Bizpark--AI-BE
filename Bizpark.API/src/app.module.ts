@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { AgentModule } from './agent/agent.module';
 import { BusinessModule } from './business/business.module';
 import { AuthModule } from './auth/auth.module';
+import { GoogleBusinessModule } from './google-business/google-business.module';
 
 const redisHost = process.env.REDIS_HOST || 'localhost';
 const redisPort = Number(process.env.REDIS_PORT || 6379);
@@ -18,6 +19,7 @@ const redisPort = Number(process.env.REDIS_PORT || 6379);
     AgentModule,
     BusinessModule,
     AuthModule,
+    GoogleBusinessModule,
   ],
 })
 export class AppModule { }

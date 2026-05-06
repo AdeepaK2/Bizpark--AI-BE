@@ -22,6 +22,7 @@ export declare const TaskType: {
     readonly WEBSITE_GENERATION: "WEBSITE_GENERATION";
     readonly SOCIAL_MEDIA_CONTENT: "SOCIAL_MEDIA_CONTENT";
     readonly BLOG_POST_WRITING: "BLOG_POST_WRITING";
+    readonly GOOGLE_REVIEW_REPLY: "GOOGLE_REVIEW_REPLY";
 };
 export type TaskType = (typeof TaskType)[keyof typeof TaskType];
 export declare const UserRole: {
