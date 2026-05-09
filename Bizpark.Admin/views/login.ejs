@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <div class="login">
+    <div class="card login-card">
+      <h1>Bizpark Admin</h1>
+      <p class="muted">Sign in to manage clients, generated websites, subscriptions, and deployments.</p>
+      <% if (error) { %>
+        <p class="badge"><%= error %></p>
+      <% } %>
+      <form class="stack" method="post" action="/admin/login">
+        <label>Email<br><input name="email" type="email" value="<%= bootstrapEmail %>" required></label>
+        <label>Password<br><input name="password" type="password" required></label>
+        <button type="submit">Log in</button>
+      </form>
+      <p class="muted">First login can bootstrap the first admin from ADMIN_EMAIL and ADMIN_PASSWORD.</p>
+    </div>
+  </div>
+</body>
+</html>

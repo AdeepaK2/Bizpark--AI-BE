@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title || 'Bizpark Admin' %></title>
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">Bizpark Admin</div>
+    <nav class="nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/businesses">Businesses</a>
+      <a href="/admin/websites">Websites</a>
+      <a href="/admin/agent-tasks">Agent Tasks</a>
+      <a href="/admin/subscriptions">Subscriptions</a>
+      <a href="/admin/users">Users</a>
+      <a href="/admin/audit-logs">Audit Logs</a>
+    </nav>
+    <form class="logout" method="post" action="/admin/logout">
+      <button type="submit">Log out</button>
+    </form>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h1><%= title || 'Admin' %></h1>
+      <% if (admin) { %>
+        <div class="muted"><%= admin.name %> · <%= admin.role %></div>
+      <% } %>
+    </div>

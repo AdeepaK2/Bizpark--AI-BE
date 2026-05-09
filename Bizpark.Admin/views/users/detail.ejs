@@ -1,0 +1,22 @@
+<%- include('../partials/header') %>
+<div class="stack">
+  <section class="card">
+    <h2><%= user.name %></h2>
+    <p><%= user.email %></p>
+    <p>Status: <span class="badge"><%= user.isActive ? 'ACTIVE' : 'DISABLED' %></span></p>
+    <form method="post" action="/admin/users/<%= user.id %>/status" class="actions">
+      <select name="isActive">
+        <option value="true" <%= user.isActive ? 'selected' : '' %>>ACTIVE</option>
+        <option value="false" <%= !user.isActive ? 'selected' : '' %>>DISABLED</option>
+      </select>
+      <button type="submit">Update User</button>
+    </form>
+  </section>
+  <section class="card">
+    <h2>Businesses</h2>
+    <% user.businesses?.forEach((businessUser) => { %>
+      <p><a href="/admin/businesses/<%= businessUser.businessId %>"><%= businessUser.business?.name || businessUser.businessId %></a> <span class="badge"><%= businessUser.role %></span></p>
+    <% }) %>
+  </section>
+</div>
+<%- include('../partials/footer') %>
