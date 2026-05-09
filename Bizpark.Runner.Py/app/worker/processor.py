@@ -78,15 +78,29 @@ async def _handle_website_generation(input_data: dict) -> dict:
     }
 
 
+from urllib.parse import urlparse
+
 async def start_worker():
+    # Parse the Redis URL manually for BullMQ which expects a dictionary
+    if settings.redis_url:
+        parsed = urlparse(settings.redis_url)
+        redis_connection = {
+            "host": parsed.hostname,
+            "port": parsed.port or 6379,
+            "password": parsed.password,
+            "ssl": parsed.scheme == "rediss"
+        }
+    else:
+        redis_connection = {
+            "host": settings.redis_host,
+            "port": settings.redis_port,
+        }
+
     worker = Worker(
         "agent-queue",
         process_agent_task,
         {
-            "connection": {
-                "host": settings.redis_host,
-                "port": settings.redis_port,
-            },
+            "connection": redis_connection,
         },
     )
     logger.info("BullMQ Worker started — listening on 'agent-queue'")
