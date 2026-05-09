@@ -9,7 +9,7 @@
 <body>
 <div class="shell">
   <aside class="sidebar">
-    <div class="brand">Bizpark Admin</div>
+    <div class="brand">BizSpark AI Admin</div>
     <nav class="nav">
       <a href="/admin">Dashboard</a>
       <a href="/admin/businesses">Businesses</a>
@@ -27,6 +27,6 @@
     <div class="topbar">
       <h1><%= title || 'Admin' %></h1>
       <% if (admin) { %>
-        <div class="muted"><%= admin.name %> · <%= admin.role %></div>
+        <div class="admin-pill"><%= admin.name %> · <%= admin.role %></div>
       <% } %>
     </div>
