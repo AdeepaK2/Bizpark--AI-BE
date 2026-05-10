@@ -12,7 +12,7 @@ const getRunnerDataSource = () => {
             name: 'runner',
             urlEnvVar: 'RUNNER_DATABASE_URL',
             schemaEnvVar: 'RUNNER_DB_SCHEMA',
-            defaultSchema: 'public',
+            defaultSchema: 'runner',
             entities: runner_1.RUNNER_ENTITIES,
             migrationsGlob: `${__dirname}/../migrations/runner/*{.ts,.js}`,
         }));
@@ -20,3 +20,4 @@ const getRunnerDataSource = () => {
     return runnerDataSource;
 };
 exports.getRunnerDataSource = getRunnerDataSource;
+exports.default = (0, exports.getRunnerDataSource)();

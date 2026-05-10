@@ -29,6 +29,10 @@ __decorate([
     __metadata("design:type", String)
 ], ApiUserEntity.prototype, "name", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'boolean', default: true }),
+    __metadata("design:type", Boolean)
+], ApiUserEntity.prototype, "isActive", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => business_user_entity_1.ApiBusinessUserEntity, (businessUser) => businessUser.user),
     __metadata("design:type", Array)
 ], ApiUserEntity.prototype, "businesses", void 0);

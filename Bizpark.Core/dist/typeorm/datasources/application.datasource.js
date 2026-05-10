@@ -12,7 +12,7 @@ const getApplicationDataSource = () => {
             name: 'application',
             urlEnvVar: 'APPLICATION_DATABASE_URL',
             schemaEnvVar: 'APPLICATION_DB_SCHEMA',
-            defaultSchema: 'public',
+            defaultSchema: 'api',
             entities: api_1.API_ENTITIES,
             migrationsGlob: `${__dirname}/../migrations/application/*{.ts,.js}`,
         }));
@@ -20,3 +20,4 @@ const getApplicationDataSource = () => {
     return applicationDataSource;
 };
 exports.getApplicationDataSource = getApplicationDataSource;
+exports.default = (0, exports.getApplicationDataSource)();

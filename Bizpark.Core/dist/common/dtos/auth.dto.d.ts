@@ -10,4 +10,5 @@ export declare class LoginUserDto {
 export interface JwtPayload {
     sub: string;
     email: string;
+    name: string;
 }

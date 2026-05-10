@@ -37,6 +37,23 @@ __decorate([
     __metadata("design:type", Object)
 ], ApiWebsiteEntity.prototype, "templateId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: shared_1.WebsiteStatus,
+        enumName: 'WebsiteStatus',
+        default: shared_1.WebsiteStatus.DRAFT,
+    }),
+    __metadata("design:type", String)
+], ApiWebsiteEntity.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamptz', nullable: true }),
+    __metadata("design:type", Object)
+], ApiWebsiteEntity.prototype, "publishedAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'timestamptz', nullable: true }),
+    __metadata("design:type", Object)
+], ApiWebsiteEntity.prototype, "suspendedAt", void 0);
+__decorate([
     (0, typeorm_1.ManyToOne)(() => business_entity_1.ApiBusinessEntity, (business) => business.websites, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'businessId' }),
     __metadata("design:type", business_entity_1.ApiBusinessEntity)

@@ -12,7 +12,7 @@ const getAdminDataSource = () => {
             name: 'admin',
             urlEnvVar: 'ADMIN_DATABASE_URL',
             schemaEnvVar: 'ADMIN_DB_SCHEMA',
-            defaultSchema: 'public',
+            defaultSchema: 'admin',
             entities: admin_1.ADMIN_ENTITIES,
             migrationsGlob: `${__dirname}/../migrations/admin/*{.ts,.js}`,
         }));
@@ -20,3 +20,4 @@ const getAdminDataSource = () => {
     return adminDataSource;
 };
 exports.getAdminDataSource = getAdminDataSource;
+exports.default = (0, exports.getAdminDataSource)();
