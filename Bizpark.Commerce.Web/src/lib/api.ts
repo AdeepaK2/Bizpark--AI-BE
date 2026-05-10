@@ -42,6 +42,7 @@ export const updateWebsiteConfig = (token: string, payload: Partial<{
   faviconUrl: string | null;
   currency: string;
   locale: string;
+  isPublished: boolean;
   content: Partial<WebsiteConfigContent>;
 }>) =>
   req<{ success: boolean; data: WebsiteConfig }>('/api/commerce/website-config', {

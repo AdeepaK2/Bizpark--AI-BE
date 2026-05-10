@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<table class="table">
+  <thead><tr><th>Business</th><th>Tier</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
+  <tbody>
+    <% subscriptions.forEach((subscription) => { %>
+      <tr>
+        <td><a href="/admin/businesses/<%= subscription.businessId %>"><%= subscription.business?.name || subscription.businessId %></a></td>
+        <td><span class="badge"><%= subscription.tier %></span></td>
+        <td><span class="badge"><%= subscription.status %></span></td>
+        <td><%= subscription.startedAt ? subscription.startedAt.toISOString().slice(0, 10) : '-' %></td>
+        <td><%= subscription.expiresAt ? subscription.expiresAt.toISOString().slice(0, 10) : '-' %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

@@ -5,6 +5,40 @@ export const SubscriptionTier = {
 } as const;
 export type SubscriptionTier = (typeof SubscriptionTier)[keyof typeof SubscriptionTier];
 
+export const SubscriptionStatus = {
+    TRIALING: 'TRIALING',
+    ACTIVE: 'ACTIVE',
+    PAST_DUE: 'PAST_DUE',
+    CANCELLED: 'CANCELLED',
+    EXPIRED: 'EXPIRED',
+} as const;
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus];
+
+export const BusinessStatus = {
+    ACTIVE: 'ACTIVE',
+    SUSPENDED: 'SUSPENDED',
+    ARCHIVED: 'ARCHIVED',
+} as const;
+export type BusinessStatus = (typeof BusinessStatus)[keyof typeof BusinessStatus];
+
+export const WebsiteStatus = {
+    DRAFT: 'DRAFT',
+    GENERATING: 'GENERATING',
+    PENDING_APPROVAL: 'PENDING_APPROVAL',
+    PUBLISHED: 'PUBLISHED',
+    UNPUBLISHED: 'UNPUBLISHED',
+    FAILED: 'FAILED',
+    SUSPENDED: 'SUSPENDED',
+} as const;
+export type WebsiteStatus = (typeof WebsiteStatus)[keyof typeof WebsiteStatus];
+
+export const AdminRole = {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    ADMIN: 'ADMIN',
+    SUPPORT: 'SUPPORT',
+} as const;
+export type AdminRole = (typeof AdminRole)[keyof typeof AdminRole];
+
 export const TemplateType = {
     SHOWCASE: 'SHOWCASE',
     ECOMMERCE_ITEM: 'ECOMMERCE_ITEM',

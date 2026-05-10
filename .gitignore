@@ -1,6 +1,13 @@
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
 *.js.map
 *.d.ts
 *.tsbuildinfo
+
+# env files
+Bizpark.Commerce/env
+Bizpark.Commerce.Web/env.local
+Bizpark.Core/env

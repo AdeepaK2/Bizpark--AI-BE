@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<table class="table">
+  <thead><tr><th>Domain</th><th>Business</th><th>Template</th><th>Status</th><th>Published</th></tr></thead>
+  <tbody>
+    <% websites.forEach((website) => { %>
+      <tr>
+        <td><a href="/admin/websites/<%= website.id %>"><%= website.domain || website.id %></a></td>
+        <td><a href="/admin/businesses/<%= website.businessId %>"><%= website.business?.name || website.businessId %></a></td>
+        <td><%= website.templateId || '-' %></td>
+        <td><span class="badge"><%= website.status %></span></td>
+        <td><%= website.publishedAt ? website.publishedAt.toISOString().slice(0, 10) : '-' %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

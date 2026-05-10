@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Get, Param, BadRequestException, NotFoundException, UseGuards } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { runnerDb, CreateAgentTaskDto } from 'bizpark.core';
+import { applicationDb, runnerDb, CreateAgentTaskDto, WebsiteStatus } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 
@@ -20,6 +20,7 @@ export class AgentController {
     }
 
     @Get('tasks')
+    @UseGuards(JwtAuthGuard)
     async getAllTasks(): Promise<any> {
         return runnerDb.agentTask.findMany({ orderBy: { createdAt: 'desc' } });
     }
@@ -48,6 +49,19 @@ export class AgentController {
             data: { status: 'COMPLETED', outputData: { approvedContent: content } },
         });
 
+        const website = await applicationDb.website.findFirstByBusinessId({ businessId: task.businessId });
+        if (website) {
+            await applicationDb.website.update({
+                where: { id: website.id },
+                data: {
+                    status: WebsiteStatus.PUBLISHED,
+                    cmsData: content,
+                    publishedAt: new Date(),
+                    suspendedAt: null,
+                },
+            });
+        }
+
         // Push generated config to Commerce in background
         void fetch(`${commerceUrl}/api/commerce/website-config`, {
             method: 'PATCH',
@@ -68,6 +82,14 @@ export class AgentController {
             where: { id: taskId },
             data: { status: 'FAILED', outputData: { reason: 'Rejected by user' } },
         });
+
+        const website = await applicationDb.website.findFirstByBusinessId({ businessId: task.businessId });
+        if (website) {
+            await applicationDb.website.update({
+                where: { id: website.id },
+                data: { status: WebsiteStatus.FAILED },
+            });
+        }
 
         return { success: true, message: 'Task rejected' };
     }

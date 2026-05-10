@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Category</th>
+      <th>Tier</th>
+      <th>Status</th>
+      <th>Users</th>
+      <th>Websites</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% businesses.forEach((business) => { %>
+      <tr>
+        <td><a href="/admin/businesses/<%= business.id %>"><%= business.name %></a></td>
+        <td><%= business.category || '-' %></td>
+        <td><span class="badge"><%= business.subscriptionTier %></span></td>
+        <td><span class="badge"><%= business.status %></span></td>
+        <td><%= business.users?.length || 0 %></td>
+        <td><%= business.websites?.length || 0 %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>
