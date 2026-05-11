@@ -1,15 +1,7 @@
 name: Deploy Runner to Azure Container Apps
 
 on:
-  push:
-    branches:
-      - main
-      - featur/deploy-ci/cd
-    paths:
-      - 'Bizpark.Runner.Py/**'
-      - 'Bizpark.Core/**'
-      - 'Dockerfile.runner'
-      - '.github/workflows/azure-deploy-runner.yml'
+  workflow_dispatch:
 
 env:
   AZURE_CONTAINER_REGISTRY: "bizparkacr"

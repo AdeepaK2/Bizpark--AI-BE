@@ -1,12 +1,15 @@
-FROM python:3.11-slim
-WORKDIR /app
+FROM python:3.11-slim AS runtime
 
-# Copy the entire monorepo to preserve relative paths (like Core/.env)
-COPY . .
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PORT=3001
 
-# Install and run Runner
 WORKDIR /app/Bizpark.Runner.Py
+
+COPY Bizpark.Runner.Py/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
+
+COPY Bizpark.Runner.Py ./
 
 EXPOSE 3001
 CMD ["python", "run.py"]

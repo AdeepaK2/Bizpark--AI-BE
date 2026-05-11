@@ -2,15 +2,6 @@ name: Deploy API to Azure Container Apps
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - featur/deploy-ci/cd
-    paths:
-      - 'Bizpark.API/**'
-      - 'Bizpark.Core/**'
-      - 'Dockerfile.api'
-      - '.github/workflows/azure-deploy-api.yml'
 
 env:
   AZURE_CONTAINER_REGISTRY: "bizparkacr"
@@ -39,15 +30,3 @@ jobs:
           containerAppName: ${{ env.CONTAINER_APP_NAME }}
           resourceGroup: ${{ env.RESOURCE_GROUP }}
           imageToBuild: ${{ env.AZURE_CONTAINER_REGISTRY }}.azurecr.io/${{ env.CONTAINER_APP_NAME }}:${{ github.sha }}
-
-      - name: Set environment variables on Container App
-        run: |
-          az containerapp update \
-            --name ${{ env.CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP }} \
-            --set-env-vars \
-              "REDIS_URL=${{ secrets.REDIS_URL }}" \
-              "APPLICATION_DATABASE_URL=${{ secrets.APPLICATION_DATABASE_URL }}" \
-              "JWT_SECRET=${{ secrets.JWT_SECRET }}" \
-              "ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}" \
-              "INTERNAL_API_KEY=${{ secrets.INTERNAL_API_KEY }}"
