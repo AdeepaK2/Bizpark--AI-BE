@@ -11,12 +11,14 @@ WORKDIR /app/Bizpark.Core
 RUN npm ci
 COPY Bizpark.Core ./
 RUN npm run build
-RUN npm prune --omit=dev
 
 WORKDIR /app/Bizpark.API
 RUN npm ci
 COPY Bizpark.API ./
 RUN npm run build
+RUN npm prune --omit=dev
+
+WORKDIR /app/Bizpark.Core
 RUN npm prune --omit=dev
 
 FROM node:20-alpine AS runtime
