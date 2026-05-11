@@ -16,7 +16,7 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_OWNER: adeepak2
+  IMAGE_OWNER: codesprint-bizspark
   INFRA_REPO: codesprint-bizspark/Infra
   INFRA_BRANCH: main
   INFRA_OVERLAY_PATH: apps/bizpark/overlays/prod
@@ -129,11 +129,11 @@ jobs:
               digests[key] = value
 
           services = [
-              ("api", "ghcr.io/adeepak2/bizpark-api"),
-              ("admin", "ghcr.io/adeepak2/bizpark-admin"),
-              ("commerce", "ghcr.io/adeepak2/bizpark-commerce"),
-              ("commerce-web", "ghcr.io/adeepak2/bizpark-commerce-web"),
-              ("runner", "ghcr.io/adeepak2/bizpark-runner"),
+              ("api", "ghcr.io/codesprint-bizspark/bizpark-api"),
+              ("admin", "ghcr.io/codesprint-bizspark/bizpark-admin"),
+              ("commerce", "ghcr.io/codesprint-bizspark/bizpark-commerce"),
+              ("commerce-web", "ghcr.io/codesprint-bizspark/bizpark-commerce-web"),
+              ("runner", "ghcr.io/codesprint-bizspark/bizpark-runner"),
           ]
 
           missing = [service for service, _ in services if service not in digests]
