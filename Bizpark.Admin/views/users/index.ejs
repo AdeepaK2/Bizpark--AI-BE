@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<table class="table">
+  <thead><tr><th>Name</th><th>Email</th><th>Status</th><th>Businesses</th></tr></thead>
+  <tbody>
+    <% users.forEach((user) => { %>
+      <tr>
+        <td><a href="/admin/users/<%= user.id %>"><%= user.name %></a></td>
+        <td><%= user.email %></td>
+        <td><span class="badge"><%= user.isActive ? 'ACTIVE' : 'DISABLED' %></span></td>
+        <td><%= user.businesses?.length || 0 %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

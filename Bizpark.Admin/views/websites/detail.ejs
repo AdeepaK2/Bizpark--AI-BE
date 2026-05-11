@@ -1,0 +1,21 @@
+<%- include('../partials/header') %>
+<div class="stack">
+  <section class="card">
+    <h2><%= website.domain || website.id %></h2>
+    <p>Business: <a href="/admin/businesses/<%= website.businessId %>"><%= website.business?.name || website.businessId %></a></p>
+    <p>Template: <%= website.templateId || '-' %></p>
+    <p>Vercel URL: <% if (website.vercelUrl) { %><a href="<%= website.vercelUrl %>"><%= website.vercelUrl %></a><% } else { %>-<% } %></p>
+    <p>Status: <span class="badge"><%= website.status %></span></p>
+    <div class="actions">
+      <form method="post" action="/admin/websites/<%= website.id %>/publish"><button type="submit">Publish</button></form>
+      <form method="post" action="/admin/websites/<%= website.id %>/unpublish"><button class="secondary" type="submit">Unpublish</button></form>
+      <form method="post" action="/admin/websites/<%= website.id %>/redeploy"><button class="secondary" type="submit">Redeploy</button></form>
+      <form method="post" action="/admin/websites/<%= website.id %>/suspend"><button class="danger" type="submit">Suspend</button></form>
+    </div>
+  </section>
+  <section class="card">
+    <h2>CMS Data</h2>
+    <pre><%= JSON.stringify(website.cmsData || {}, null, 2) %></pre>
+  </section>
+</div>
+<%- include('../partials/footer') %>

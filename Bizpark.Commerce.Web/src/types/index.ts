@@ -56,6 +56,7 @@ export interface WebsiteConfig {
   faviconUrl: string | null;
   currency: string;
   locale: string;
+  isPublished: boolean;
   content: WebsiteConfigContent | null;
   updatedAt: string;
 }

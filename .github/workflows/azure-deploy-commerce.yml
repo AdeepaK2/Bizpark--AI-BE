@@ -2,15 +2,6 @@ name: Deploy Commerce API to Azure Container Apps
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - featur/deploy-ci/cd
-    paths:
-      - 'Bizpark.Commerce/**'
-      - 'Bizpark.Core/**'
-      - 'Dockerfile.commerce'
-      - '.github/workflows/azure-deploy-commerce.yml'
 
 env:
   AZURE_CONTAINER_REGISTRY: "bizparkacr"

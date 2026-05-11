@@ -13,6 +13,7 @@ exports.ApiBusinessEntity = void 0;
 const typeorm_1 = require("typeorm");
 const shared_1 = require("../shared");
 const business_user_entity_1 = require("./business-user.entity");
+const subscription_entity_1 = require("./subscription.entity");
 const website_entity_1 = require("./website.entity");
 let ApiBusinessEntity = class ApiBusinessEntity extends shared_1.BaseEntityWithTimestamps {
 };
@@ -43,6 +44,15 @@ __decorate([
     __metadata("design:type", String)
 ], ApiBusinessEntity.prototype, "subscriptionTier", void 0);
 __decorate([
+    (0, typeorm_1.Column)({
+        type: 'enum',
+        enum: shared_1.BusinessStatus,
+        enumName: 'BusinessStatus',
+        default: shared_1.BusinessStatus.ACTIVE,
+    }),
+    __metadata("design:type", String)
+], ApiBusinessEntity.prototype, "status", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => business_user_entity_1.ApiBusinessUserEntity, (businessUser) => businessUser.business),
     __metadata("design:type", Array)
 ], ApiBusinessEntity.prototype, "users", void 0);
@@ -50,6 +60,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => website_entity_1.ApiWebsiteEntity, (website) => website.business),
     __metadata("design:type", Array)
 ], ApiBusinessEntity.prototype, "websites", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => subscription_entity_1.ApiSubscriptionEntity, (subscription) => subscription.business),
+    __metadata("design:type", Array)
+], ApiBusinessEntity.prototype, "subscriptions", void 0);
 exports.ApiBusinessEntity = ApiBusinessEntity = __decorate([
     (0, typeorm_1.Entity)({ name: 'businesses' })
 ], ApiBusinessEntity);

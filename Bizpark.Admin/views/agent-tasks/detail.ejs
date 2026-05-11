@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<div class="stack">
+  <section class="card">
+    <h2><%= task.taskType %></h2>
+    <p>Business: <%= task.businessId %></p>
+    <p>Status: <span class="badge"><%= task.status %></span></p>
+    <div class="actions">
+      <form method="post" action="/admin/agent-tasks/<%= task.id %>/approve"><button type="submit">Approve</button></form>
+      <form method="post" action="/admin/agent-tasks/<%= task.id %>/reject"><button class="danger" type="submit">Reject</button></form>
+      <form method="post" action="/admin/agent-tasks/<%= task.id %>/retry"><button class="secondary" type="submit">Retry</button></form>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Input</h2>
+    <pre><%= JSON.stringify(task.inputData || {}, null, 2) %></pre>
+  </section>
+  <section class="card">
+    <h2>Output</h2>
+    <pre><%= JSON.stringify(task.outputData || {}, null, 2) %></pre>
+  </section>
+  <section class="card">
+    <h2>Logs</h2>
+    <pre><%= task.logs || 'No logs' %></pre>
+  </section>
+</div>
+<%- include('../partials/footer') %>

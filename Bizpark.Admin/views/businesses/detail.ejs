@@ -1,0 +1,58 @@
+<%- include('../partials/header') %>
+<div class="stack">
+  <section class="card">
+    <h2><%= business.name %></h2>
+    <p class="muted"><%= business.description || 'No description' %></p>
+    <p>Category: <%= business.category || '-' %></p>
+    <p>Tier: <span class="badge"><%= business.subscriptionTier %></span> Status: <span class="badge"><%= business.status %></span></p>
+  </section>
+
+  <section class="card">
+    <h2>Controls</h2>
+    <div class="actions">
+      <form method="post" action="/admin/businesses/<%= business.id %>/status">
+        <label>Status<br>
+          <select name="status">
+            <% businessStatuses.forEach((status) => { %>
+              <option value="<%= status %>" <%= business.status === status ? 'selected' : '' %>><%= status %></option>
+            <% }) %>
+          </select>
+        </label>
+        <button type="submit">Update Status</button>
+      </form>
+      <form method="post" action="/admin/businesses/<%= business.id %>/subscription">
+        <label>Tier<br>
+          <select name="tier">
+            <% subscriptionTiers.forEach((tier) => { %>
+              <option value="<%= tier %>" <%= business.subscriptionTier === tier ? 'selected' : '' %>><%= tier %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Status<br>
+          <select name="status">
+            <% subscriptionStatuses.forEach((status) => { %>
+              <option value="<%= status %>"><%= status %></option>
+            <% }) %>
+          </select>
+        </label>
+        <label>Expires<br><input type="date" name="expiresAt"></label>
+        <button type="submit">Update Subscription</button>
+      </form>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Users</h2>
+    <% business.users?.forEach((businessUser) => { %>
+      <p><a href="/admin/users/<%= businessUser.userId %>"><%= businessUser.user?.email || businessUser.userId %></a> <span class="badge"><%= businessUser.role %></span></p>
+    <% }) %>
+  </section>
+
+  <section class="card">
+    <h2>Websites</h2>
+    <% business.websites?.forEach((website) => { %>
+      <p><a href="/admin/websites/<%= website.id %>"><%= website.domain || website.id %></a> <span class="badge"><%= website.status %></span></p>
+    <% }) %>
+  </section>
+</div>
+<%- include('../partials/footer') %>

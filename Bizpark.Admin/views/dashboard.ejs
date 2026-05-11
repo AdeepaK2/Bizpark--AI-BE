@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+<section class="hero-panel">
+  <div>
+    <span class="eyebrow">Admin Command Center</span>
+    <h2>Control every business, website, subscription, and AI task from one place.</h2>
+    <p>Monitor registrations, approve generated pages, manage client access, and keep deployed storefronts live, suspended, or ready for another spark.</p>
+  </div>
+</section>
+
+<section class="grid">
+  <% Object.entries(stats).forEach(([label, value]) => { %>
+    <div class="card">
+      <div class="muted"><%= label %></div>
+      <div class="metric"><%= value %></div>
+    </div>
+  <% }) %>
+</section>
+
+<section class="grid" style="margin-top: 20px;">
+  <div class="card">
+    <h2>Recent Businesses</h2>
+    <% recent.businesses.forEach((business) => { %>
+      <p><a href="/admin/businesses/<%= business.id %>"><%= business.name %></a> <span class="badge"><%= business.status %></span></p>
+    <% }) %>
+  </div>
+  <div class="card">
+    <h2>Recent Websites</h2>
+    <% recent.websites.forEach((website) => { %>
+      <p><a href="/admin/websites/<%= website.id %>"><%= website.domain || website.id %></a> <span class="badge"><%= website.status %></span></p>
+    <% }) %>
+  </div>
+  <div class="card">
+    <h2>Recent Tasks</h2>
+    <% recent.tasks.forEach((task) => { %>
+      <p><a href="/admin/agent-tasks/<%= task.id %>"><%= task.taskType %></a> <span class="badge"><%= task.status %></span></p>
+    <% }) %>
+  </div>
+</section>
+<%- include('partials/footer') %>

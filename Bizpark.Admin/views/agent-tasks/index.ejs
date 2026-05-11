@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<table class="table">
+  <thead><tr><th>Task</th><th>Business</th><th>Type</th><th>Status</th><th>Created</th></tr></thead>
+  <tbody>
+    <% tasks.forEach((task) => { %>
+      <tr>
+        <td><a href="/admin/agent-tasks/<%= task.id %>"><%= task.id %></a></td>
+        <td><%= task.businessId %></td>
+        <td><%= task.taskType %></td>
+        <td><span class="badge"><%= task.status %></span></td>
+        <td><%= task.createdAt ? task.createdAt.toISOString().slice(0, 16).replace('T', ' ') : '-' %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<%- include('../partials/footer') %>

@@ -113,7 +113,25 @@ const ensureBaseSchemas = async (client) => {
 
 const ensureEnums = async (client) => {
   await createEnumIfMissing(client, appSchema, 'SubscriptionTier', ['FREE', 'PRO', 'AGENCY']);
+  await createEnumIfMissing(client, appSchema, 'SubscriptionStatus', [
+    'TRIALING',
+    'ACTIVE',
+    'PAST_DUE',
+    'CANCELLED',
+    'EXPIRED',
+  ]);
+  await createEnumIfMissing(client, appSchema, 'BusinessStatus', ['ACTIVE', 'SUSPENDED', 'ARCHIVED']);
+  await createEnumIfMissing(client, appSchema, 'WebsiteStatus', [
+    'DRAFT',
+    'GENERATING',
+    'PENDING_APPROVAL',
+    'PUBLISHED',
+    'UNPUBLISHED',
+    'FAILED',
+    'SUSPENDED',
+  ]);
   await createEnumIfMissing(client, appSchema, 'UserRole', ['OWNER', 'ADMIN', 'EDITOR', 'VIEWER']);
+  await createEnumIfMissing(client, adminSchema, 'AdminRole', ['SUPER_ADMIN', 'ADMIN', 'SUPPORT']);
   await createEnumIfMissing(client, adminSchema, 'TemplateType', [
     'SHOWCASE',
     'ECOMMERCE_ITEM',
@@ -127,6 +145,7 @@ const ensureEnums = async (client) => {
   await createEnumIfMissing(client, runnerSchema, 'TaskStatus', [
     'QUEUED',
     'PROCESSING',
+    'PENDING_APPROVAL',
     'COMPLETED',
     'FAILED',
   ]);
@@ -140,14 +159,15 @@ CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('User')} (
   "updatedAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "email" varchar(255) NOT NULL,
   "passwordHash" varchar(255) NOT NULL,
-  "name" varchar(255) NOT NULL
+  "name" varchar(255) NOT NULL,
+  "isActive" boolean NOT NULL DEFAULT true
 )`);
   await client.query(`
 CREATE UNIQUE INDEX IF NOT EXISTS ${quoteIdent(`UQ_${appSchema}_User_email`)}
   ON ${quoteIdent(appSchema)}.${quoteIdent('User')} ("email")`);
 
   await client.query(`
-CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('Business')} (
+CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('businesses')} (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   "createdAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -155,7 +175,8 @@ CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('Business')} (
   "category" varchar(255),
   "description" text,
   "logoUrl" text,
-  "subscriptionTier" ${quoteIdent(appSchema)}.${quoteIdent('SubscriptionTier')} NOT NULL DEFAULT 'FREE'
+  "subscriptionTier" ${quoteIdent(appSchema)}.${quoteIdent('SubscriptionTier')} NOT NULL DEFAULT 'FREE',
+  "status" ${quoteIdent(appSchema)}.${quoteIdent('BusinessStatus')} NOT NULL DEFAULT 'ACTIVE'
 )`);
 
   await client.query(`
@@ -180,7 +201,7 @@ CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('BusinessUser')
     appSchema,
     'BusinessUser',
     `FK_${appSchema}_BusinessUser_businessId`,
-    `FOREIGN KEY ("businessId") REFERENCES ${quoteIdent(appSchema)}.${quoteIdent('Business')}("id") ON DELETE CASCADE`,
+    `FOREIGN KEY ("businessId") REFERENCES ${quoteIdent(appSchema)}.${quoteIdent('businesses')}("id") ON DELETE CASCADE`,
   );
 
   await client.query(`
@@ -192,7 +213,10 @@ CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('Website')} (
   "domain" varchar(255),
   "vercelUrl" text,
   "cmsData" jsonb,
-  "templateId" uuid NOT NULL
+  "templateId" varchar(255),
+  "status" ${quoteIdent(appSchema)}.${quoteIdent('WebsiteStatus')} NOT NULL DEFAULT 'DRAFT',
+  "publishedAt" timestamptz,
+  "suspendedAt" timestamptz
 )`);
   await client.query(`
 CREATE UNIQUE INDEX IF NOT EXISTS ${quoteIdent(`UQ_${appSchema}_Website_domain`)}
@@ -203,7 +227,29 @@ CREATE UNIQUE INDEX IF NOT EXISTS ${quoteIdent(`UQ_${appSchema}_Website_domain`)
     appSchema,
     'Website',
     `FK_${appSchema}_Website_businessId`,
-    `FOREIGN KEY ("businessId") REFERENCES ${quoteIdent(appSchema)}.${quoteIdent('Business')}("id") ON DELETE CASCADE`,
+    `FOREIGN KEY ("businessId") REFERENCES ${quoteIdent(appSchema)}.${quoteIdent('businesses')}("id") ON DELETE CASCADE`,
+  );
+
+  await client.query(`
+CREATE TABLE IF NOT EXISTS ${quoteIdent(appSchema)}.${quoteIdent('Subscription')} (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "createdAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "businessId" uuid NOT NULL,
+  "tier" ${quoteIdent(appSchema)}.${quoteIdent('SubscriptionTier')} NOT NULL DEFAULT 'FREE',
+  "status" ${quoteIdent(appSchema)}.${quoteIdent('SubscriptionStatus')} NOT NULL DEFAULT 'TRIALING',
+  "startedAt" timestamptz,
+  "expiresAt" timestamptz,
+  "paymentProvider" varchar(100),
+  "paymentReference" varchar(255)
+)`);
+
+  await addConstraintIfMissing(
+    client,
+    appSchema,
+    'Subscription',
+    `FK_${appSchema}_Subscription_businessId`,
+    `FOREIGN KEY ("businessId") REFERENCES ${quoteIdent(appSchema)}.${quoteIdent('businesses')}("id") ON DELETE CASCADE`,
   );
 
   // Compatibility for legacy API paths still reading these tables.
@@ -244,6 +290,31 @@ CREATE TABLE IF NOT EXISTS ${quoteIdent(adminSchema)}.${quoteIdent('Template')} 
   "deployment" jsonb NOT NULL DEFAULT '{}'::jsonb,
   "cmsSchema" jsonb NOT NULL DEFAULT '{}'::jsonb,
   "baseHtmlUrl" text
+)`);
+
+  await client.query(`
+CREATE TABLE IF NOT EXISTS ${quoteIdent(adminSchema)}.${quoteIdent('AdminUser')} (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "createdAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "email" varchar(255) NOT NULL UNIQUE,
+  "passwordHash" varchar(255) NOT NULL,
+  "name" varchar(255) NOT NULL,
+  "role" ${quoteIdent(adminSchema)}.${quoteIdent('AdminRole')} NOT NULL DEFAULT 'ADMIN',
+  "isActive" boolean NOT NULL DEFAULT true
+)`);
+
+  await client.query(`
+CREATE TABLE IF NOT EXISTS ${quoteIdent(adminSchema)}.${quoteIdent('AdminAuditLog')} (
+  "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  "createdAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "adminId" uuid,
+  "action" varchar(255) NOT NULL,
+  "targetType" varchar(100) NOT NULL,
+  "targetId" varchar(255),
+  "beforeData" jsonb,
+  "afterData" jsonb
 )`);
 
   // Existing legacy data can miss updatedAt.

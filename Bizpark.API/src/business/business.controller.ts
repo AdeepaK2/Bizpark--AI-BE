@@ -1,6 +1,6 @@
 ﻿import { Controller, Get, Post, Body, Param, UseGuards, BadRequestException } from '@nestjs/common';
 import { BusinessService } from './business.service';
-import { CreateBusinessDto, SaveWebsiteConfigDto } from 'bizpark.core';
+import { applicationDb, CreateBusinessDto, SaveWebsiteConfigDto, WebsiteStatus } from 'bizpark.core';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AgentService } from '../agent/agent.service';
@@ -133,6 +133,11 @@ export class BusinessController {
                 },
                 tone: body?.tone || 'professional',
             },
+        });
+
+        await applicationDb.website.update({
+            where: { id: websiteConfig.id },
+            data: { status: WebsiteStatus.GENERATING },
         });
 
         return {

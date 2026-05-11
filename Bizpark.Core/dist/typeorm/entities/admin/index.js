@@ -15,6 +15,10 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ADMIN_ENTITIES = void 0;
+const audit_log_entity_1 = require("./audit-log.entity");
 const template_entity_1 = require("./template.entity");
-exports.ADMIN_ENTITIES = [template_entity_1.AdminTemplateEntity];
+const admin_user_entity_1 = require("./admin-user.entity");
+exports.ADMIN_ENTITIES = [template_entity_1.AdminTemplateEntity, admin_user_entity_1.AdminUserEntity, audit_log_entity_1.AdminAuditLogEntity];
+__exportStar(require("./admin-user.entity"), exports);
+__exportStar(require("./audit-log.entity"), exports);
 __exportStar(require("./template.entity"), exports);

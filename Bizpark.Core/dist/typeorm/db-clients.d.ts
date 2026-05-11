@@ -1,4 +1,4 @@
-import { AdminTemplateEntity, ApiBusinessEntity, ApiUserEntity, ApiWebsiteEntity, RunnerAgentTaskEntity, SubscriptionTier, UserRole } from './entities';
+import { AdminAuditLogEntity, AdminTemplateEntity, AdminUserEntity, ApiBusinessEntity, ApiSubscriptionEntity, ApiUserEntity, ApiWebsiteEntity, BusinessStatus, RunnerAgentTaskEntity, SubscriptionStatus, SubscriptionTier, UserRole, WebsiteStatus } from './entities';
 type OrderDirection = 'asc' | 'desc' | 'ASC' | 'DESC';
 export declare const applicationDb: {
     user: {
@@ -11,6 +11,18 @@ export declare const applicationDb: {
         create: (args: {
             data: Pick<ApiUserEntity, "email" | "name" | "passwordHash">;
         }) => Promise<ApiUserEntity>;
+        findMany: (args?: {
+            orderBy?: {
+                createdAt?: OrderDirection;
+            };
+        }) => Promise<ApiUserEntity[]>;
+        update: (args: {
+            where: {
+                id: string;
+            };
+            data: Partial<ApiUserEntity>;
+        }) => Promise<ApiUserEntity>;
+        count: () => Promise<number>;
     };
     business: {
         create: (args: {
@@ -20,6 +32,7 @@ export declare const applicationDb: {
                 description?: string | null;
                 logoUrl?: string | null;
                 subscriptionTier?: SubscriptionTier;
+                status?: BusinessStatus;
                 users?: {
                     create?: {
                         userId: string;
@@ -51,6 +64,27 @@ export declare const applicationDb: {
                 websites?: boolean;
             };
         }) => Promise<ApiBusinessEntity | null>;
+        findForAdmin: (args?: {
+            orderBy?: {
+                createdAt?: OrderDirection;
+            };
+        }) => Promise<ApiBusinessEntity[]>;
+        findUniqueForAdmin: (args: {
+            where: {
+                id: string;
+            };
+        }) => Promise<ApiBusinessEntity | null>;
+        update: (args: {
+            where: {
+                id: string;
+            };
+            data: Partial<ApiBusinessEntity>;
+        }) => Promise<ApiBusinessEntity>;
+        count: (args?: {
+            where?: {
+                status?: BusinessStatus;
+            };
+        }) => Promise<number>;
     };
     website: {
         upsert: (args: {
@@ -60,10 +94,79 @@ export declare const applicationDb: {
             update: Partial<ApiWebsiteEntity>;
             create: Partial<ApiWebsiteEntity>;
         }) => Promise<ApiWebsiteEntity>;
+        findMany: (args?: {
+            orderBy?: {
+                createdAt?: OrderDirection;
+            };
+        }) => Promise<ApiWebsiteEntity[]>;
+        findUnique: (args: {
+            where: {
+                id: string;
+            };
+        }) => Promise<ApiWebsiteEntity | null>;
+        findFirstByBusinessId: (args: {
+            businessId: string;
+        }) => Promise<ApiWebsiteEntity | null>;
+        update: (args: {
+            where: {
+                id: string;
+            };
+            data: Partial<ApiWebsiteEntity>;
+        }) => Promise<ApiWebsiteEntity>;
+        count: (args?: {
+            where?: {
+                status?: WebsiteStatus;
+            };
+        }) => Promise<number>;
+    };
+    subscription: {
+        findMany: (args?: {
+            orderBy?: {
+                createdAt?: OrderDirection;
+            };
+        }) => Promise<ApiSubscriptionEntity[]>;
+        findLatestForBusiness: (args: {
+            businessId: string;
+        }) => Promise<ApiSubscriptionEntity | null>;
+        upsertForBusiness: (args: {
+            businessId: string;
+            data: Partial<ApiSubscriptionEntity> & {
+                tier?: SubscriptionTier;
+                status?: SubscriptionStatus;
+            };
+        }) => Promise<ApiSubscriptionEntity>;
+        count: (args?: {
+            where?: {
+                status?: SubscriptionStatus;
+            };
+        }) => Promise<number>;
     };
     $disconnect: () => Promise<void>;
 };
 export declare const adminDb: {
+    adminUser: {
+        findUnique: (args: {
+            where: {
+                id?: string;
+                email?: string;
+            };
+        }) => Promise<AdminUserEntity | null>;
+        findMany: () => Promise<AdminUserEntity[]>;
+        create: (args: {
+            data: Partial<AdminUserEntity>;
+        }) => Promise<AdminUserEntity>;
+        count: () => Promise<number>;
+    };
+    auditLog: {
+        create: (args: {
+            data: Partial<AdminAuditLogEntity>;
+        }) => Promise<AdminAuditLogEntity>;
+        findMany: (args?: {
+            orderBy?: {
+                createdAt?: OrderDirection;
+            };
+        }) => Promise<AdminAuditLogEntity[]>;
+    };
     template: {
         findMany: (args?: {
             where?: {
@@ -115,6 +218,11 @@ export declare const runnerDb: {
                 createdAt?: OrderDirection;
             };
         }) => Promise<RunnerAgentTaskEntity[]>;
+        count: (args?: {
+            where?: {
+                status?: string;
+            };
+        }) => Promise<number>;
     };
     $disconnect: () => Promise<void>;
 };

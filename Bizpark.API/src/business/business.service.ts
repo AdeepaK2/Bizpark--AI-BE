@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { applicationDb, CreateBusinessDto } from 'bizpark.core';
+import { applicationDb, CreateBusinessDto, WebsiteStatus } from 'bizpark.core';
 
 @Injectable()
 export class BusinessService {
@@ -42,13 +42,15 @@ export class BusinessService {
             where: { domain },
             update: {
                 templateId: dto.templateId,
-                cmsData: dto.cmsData || {}
+                cmsData: dto.cmsData || {},
+                status: WebsiteStatus.DRAFT,
             },
             create: {
                 businessId,
                 domain,
                 templateId: dto.templateId,
-                cmsData: dto.cmsData || {}
+                cmsData: dto.cmsData || {},
+                status: WebsiteStatus.DRAFT,
             }
         });
     }
